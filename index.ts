@@ -156,6 +156,8 @@ function switchTab(tabId: string) {
         loadWorldbooks();
     } else if (tabId === 'tab-insert') {
         renderInsertView();
+    } else if (tabId === 'tab-export-wb') {
+        renderExportView();
     }
 }
 
@@ -472,6 +474,148 @@ async function performInsert(memoIndices: number[], insertIndex: number) {
         console.error(error);
         toastr.error('插入失败，请查看控制台');
     }
+}
+
+// --- Tab 4: 导出到世界书 ---
+function renderExportView() {
+    const preset = getPreset('in_use');
+    const prompts = preset.prompts || [];
+    const $list = $('#preset-memo-export-list');
+    $list.empty();
+    
+    if (prompts.length === 0) {
+        $list.append('<div class="pm-empty-state">当前预设为空。</div>');
+        updateExportCount();
+        return;
+    }
+    
+    prompts.forEach((prompt, index) => {
+        const $item = $(`
+            <div class="wb-entry-item" data-index="${index}">
+                <div class="wb-entry-header">
+                    <input type="checkbox" class="export-entry-checkbox" data-index="${index}" style="margin-top: 4px;">
+                    <div class="wb-content">
+                        <div class="wb-title">${prompt.name || prompt.id} <span class="role-tag">(${prompt.role})</span></div>
+                        <div class="wb-desc">${(prompt.content || '').substring(0, 100)}...</div>
+                    </div>
+                    <div class="wb-actions" title="查看/编辑">
+                        <i class="fa-solid fa-pen"></i>
+                    </div>
+                </div>
+                <div class="wb-entry-edit" style="display: none;">
+                    <input type="text" class="text_pole edit-name" value="${prompt.name || prompt.id || ''}">
+                    <textarea class="text_pole edit-content">${prompt.content || ''}</textarea>
+                    <div class="save-btn save-export-btn"><i class="fa-solid fa-floppy-disk"></i> 保存修改</div>
+                </div>
+            </div>
+        `);
+
+        // Toggle checkbox when clicking the content area
+        $item.find('.wb-content').on('click', function() {
+            const $cb = $item.find('.export-entry-checkbox');
+            $cb.prop('checked', !$cb.prop('checked'));
+            updateExportCount();
+        });
+
+        $item.find('.export-entry-checkbox').on('change', updateExportCount);
+
+        // Toggle edit view
+        $item.find('.wb-actions').on('click', function(e) {
+            e.stopPropagation();
+            $item.find('.wb-entry-edit').slideToggle(200);
+        });
+
+        // Save edits back to preset
+        $item.find('.save-export-btn').on('click', async function(e) {
+            e.stopPropagation();
+            const newName = $item.find('.edit-name').val() as string;
+            const newContent = $item.find('.edit-content').val() as string;
+            
+            try {
+                await updatePresetWith('in_use', (p) => {
+                    const target = p.prompts[index];
+                    if (target) {
+                        target.name = newName;
+                        target.content = newContent;
+                    }
+                    return p;
+                });
+                toastr.success('已保存到预设');
+                // Update local UI
+                prompt.name = newName;
+                prompt.content = newContent;
+                $item.find('.wb-title').html(`${newName} <span class="role-tag">(${prompt.role})</span>`);
+                $item.find('.wb-desc').text((newContent || '').substring(0, 100) + '...');
+                $item.find('.wb-entry-edit').slideUp(200);
+            } catch (err) {
+                console.error(err);
+                toastr.error('保存失败');
+            }
+        });
+
+        $item.data('prompt', prompt);
+        $list.append($item);
+    });
+    
+    updateExportCount();
+
+    // Setup datalist for existing worldbooks
+    const wbNames = getWorldbookNames();
+    const $datalist = $('#preset-memo-export-datalist');
+    $datalist.empty();
+    wbNames.forEach(name => {
+        $datalist.append(`<option value="${name}">`);
+    });
+
+    // Bind export button
+    $('#preset-memo-export-btn').off('click').on('click', async function() {
+        const targetWbName = $('#preset-memo-export-target').val() as string;
+        if (!targetWbName) {
+            toastr.warning('请输入或选择目标世界书名称');
+            return;
+        }
+
+        const selectedPrompts: any[] = [];
+        $('.export-entry-checkbox:checked').each(function() {
+            const index = parseInt($(this).data('index'));
+            selectedPrompts.push(prompts[index]);
+        });
+
+        if (selectedPrompts.length === 0) {
+            toastr.warning('请先勾选要导出的预设条目');
+            return;
+        }
+
+        try {
+            // Check if worldbook exists, if not create it
+            const existingWbs = getWorldbookNames();
+            if (!existingWbs.includes(targetWbName)) {
+                await createWorldbook(targetWbName);
+            }
+
+            // Format entries for worldbook
+            const newEntries = selectedPrompts.map(p => ({
+                name: p.name || p.id || '未命名条目',
+                content: p.content || ''
+            }));
+
+            await createWorldbookEntries(targetWbName, newEntries);
+            toastr.success(`成功导出 ${newEntries.length} 个条目到世界书 "${targetWbName}"`);
+            
+            // Uncheck all after success
+            $('.export-entry-checkbox').prop('checked', false);
+            updateExportCount();
+            
+        } catch (e) {
+            console.error('导出到世界书失败:', e);
+            toastr.error('导出失败，请查看控制台');
+        }
+    });
+}
+
+function updateExportCount() {
+    const count = $('.export-entry-checkbox:checked').length;
+    $('#preset-memo-export-count').text(`已选中 ${count} 个条目`);
 }
 
 // --- 生命周期 ---
