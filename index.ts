@@ -220,43 +220,55 @@ function renderMemoList() {
 }
 
 // --- Tab 2: 从世界书导入 ---
+let currentWbNames: string[] = [];
+
 async function loadWorldbooks() {
     try {
         const wbNames = getWorldbookNames();
-        const $select = $('#preset-memo-wb-select');
+        currentWbNames = wbNames;
         
-        // Keep current selection if any
-        const currentVal = $select.val();
+        const $input = $('#preset-memo-wb-search');
+        const $datalist = $('#preset-memo-wb-datalist');
         
-        $select.empty();
-        $select.append('<option value="">-- 请选择世界书 --</option>');
-        
+        // 渲染 datalist 选项
+        $datalist.empty();
         wbNames.forEach(name => {
-            $select.append(`<option value="${name}">${name}</option>`);
+            $datalist.append(`<option value="${name}">`);
         });
-        
-        if (currentVal && wbNames.includes(currentVal as string)) {
-            $select.val(currentVal);
-        }
-        
-        $select.off('change').on('change', async function() {
-            const selectedWb = $(this).val() as string;
-            if (selectedWb) {
-                try {
-                    const entries = await getWorldbook(selectedWb);
-                    renderWorldbookEntries(entries, selectedWb);
-                } catch (e) {
-                    console.error('读取世界书失败:', e);
-                    toastr.error('读取世界书失败');
-                }
-            } else {
+
+        // 监听输入和选择事件
+        $input.off('input').on('input', async (e) => {
+            const val = $(e.target).val() as string;
+            
+            // 如果输入的值完全匹配某个世界书名称，则加载它
+            if (wbNames.includes(val)) {
+                await selectWorldbook(val);
+            } 
+            // 如果清空了输入框，则清空条目列表
+            else if (!val) {
                 $('#preset-memo-wb-entries').empty().append('<div class="pm-empty-state">请先在上方选择一本世界书。</div>');
                 updateImportCount();
             }
         });
+
     } catch (e) {
         console.error('获取世界书列表失败:', e);
         toastr.error('获取世界书列表失败');
+    }
+}
+
+async function selectWorldbook(selectedWb: string) {
+    if (selectedWb) {
+        try {
+            const entries = await getWorldbook(selectedWb);
+            renderWorldbookEntries(entries, selectedWb);
+        } catch (e) {
+            console.error('读取世界书失败:', e);
+            toastr.error('读取世界书失败');
+        }
+    } else {
+        $('#preset-memo-wb-entries').empty().append('<div class="pm-empty-state">请先在上方选择一本世界书。</div>');
+        updateImportCount();
     }
 }
 
