@@ -19,6 +19,9 @@
             <div class="pm-tab-btn" data-tab="tab-insert">
                 <i class="fa-solid fa-arrow-right-to-bracket"></i> 插入到当前预设
             </div>
+            <div class="pm-tab-btn" data-tab="tab-export-wb">
+                <i class="fa-solid fa-upload"></i> 导出到世界书
+            </div>
         </div>
         
         <!-- Content Area -->
@@ -73,6 +76,31 @@
                 
                 <div id="preset-memo-insert-container" class="pm-list pm-insert-list" style="flex: 1;">
                     <!-- 插入视图将在这里渲染 -->
+                </div>
+            </div>
+            
+            <!-- Tab 4: 导出到世界书 -->
+            <div id="tab-export-wb" class="pm-tab-content" style="display: none; display: flex; flex-direction: column; height: 100%;">
+                <div class="pm-info-box">
+                    <i class="fa-solid fa-circle-info"></i> 勾选当前预设中的条目，将它们导出为世界书条目。
+                </div>
+                
+                <div id="preset-memo-export-list" class="pm-list pm-wb-list" style="flex: 1; margin-bottom: 10px;">
+                    <!-- 预设条目列表将在这里渲染 -->
+                </div>
+
+                <div class="pm-sticky-footer" style="flex-direction: column; align-items: stretch; gap: 10px;">
+                    <div style="display: flex; gap: 10px; align-items: center;">
+                        <label style="white-space: nowrap;">目标世界书:</label>
+                        <input type="text" id="preset-memo-export-target" class="text_pole" placeholder="输入新名称或选择已有..." list="preset-memo-export-datalist" style="flex: 1;" autocomplete="off">
+                        <datalist id="preset-memo-export-datalist"></datalist>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <div class="pm-hint" id="preset-memo-export-count">已选中 0 个条目</div>
+                        <div id="preset-memo-export-btn" class="menu_button interactable pm-btn-primary">
+                            <i class="fa-solid fa-upload"></i> 导出选中的条目
+                        </div>
+                    </div>
                 </div>
             </div>
             
