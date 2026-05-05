@@ -1,6 +1,6 @@
+import { z } from 'zod';
 import panelHtml from './panel.html?raw';
 import cssContent from './style.scss?raw';
-import { z } from 'zod';
 
 // 定义备忘录条目的数据结构
 const MemoEntrySchema = z.object({
@@ -9,7 +9,8 @@ const MemoEntrySchema = z.object({
     content: z.string(),
     enabled: z.boolean(),
     role: z.enum(['system', 'user', 'assistant']),
-    position: z.object({ type: z.literal('relative') })
+    position: z.object({ type: z.literal('relative') }),
+    folder: z.string().optional()
 });
 
 const MemoSchema = z.array(MemoEntrySchema);
@@ -30,6 +31,23 @@ function saveMemoData(memo: MemoEntry[]) {
     const currentVars = getVariables({ type: 'script', script_id: getScriptId() }) || {};
     replaceVariables({ ...currentVars, memo }, { type: 'script', script_id: getScriptId() });
 }
+
+// 获取和保存文件夹数据
+function getFolders(): string[] {
+    const rawData = getVariables({ type: 'script', script_id: getScriptId() });
+    const folders = rawData?.folders || [];
+    if (!folders.includes('默认')) {
+        folders.unshift('默认');
+    }
+    return folders;
+}
+
+function saveFolders(folders: string[]) {
+    const currentVars = getVariables({ type: 'script', script_id: getScriptId() }) || {};
+    replaceVariables({ ...currentVars, folders }, { type: 'script', script_id: getScriptId() });
+}
+
+let currentFolder = '默认';
 
 // UI 挂载与卸载逻辑
 const BUTTON_ID = 'preset-memo-btn';
@@ -57,14 +75,29 @@ function initUI() {
         $('#preset-memo-close-btn, #preset-memo-modal-overlay').off('click').on('click', closeModal);
         $('#preset-memo-modal-content').off('click').on('click', (e) => e.stopPropagation());
         
+        // 绑定主题切换事件
+        $('#preset-memo-theme-btn').off('click').on('click', function() {
+            const $content = $('#preset-memo-modal-content');
+            $content.toggleClass('pm-light-mode');
+            const isLight = $content.hasClass('pm-light-mode');
+            localStorage.setItem('preset-memo-theme', isLight ? 'light' : 'dark');
+            
+            if (isLight) {
+                $(this).removeClass('fa-sun').addClass('fa-moon');
+            } else {
+                $(this).removeClass('fa-moon').addClass('fa-sun');
+            }
+        });
+        
         // 绑定 Tab 切换事件
         $('.pm-tab-btn').off('click').on('click', function() {
             const targetTab = $(this).data('tab');
             switchTab(targetTab);
         });
         
-        // 绑定导入按钮事件 (只绑定一次)
+        // 绑定导入世界书按钮事件 (只绑定一次)
         $('#preset-memo-import-btn').off('click').on('click', function() {
+            const targetFolder = $('#preset-memo-import-wb-folder').val() as string || '默认';
             const selectedEntries: any[] = [];
             $('.wb-entry-checkbox:checked').each(function() {
                 const $item = $(this).closest('.wb-entry-item');
@@ -73,6 +106,12 @@ function initUI() {
             
             if (selectedEntries.length > 0) {
                 const memo = getMemoData();
+                const folders = getFolders();
+                if (!folders.includes(targetFolder)) {
+                    folders.push(targetFolder);
+                    saveFolders(folders);
+                }
+
                 selectedEntries.forEach(entry => {
                     memo.push({
                         id: 'memo_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9),
@@ -80,16 +119,104 @@ function initUI() {
                         content: entry.content || '',
                         enabled: true,
                         role: 'system',
-                        position: { type: 'relative' }
+                        position: { type: 'relative' },
+                        folder: targetFolder
                     });
                 });
                 saveMemoData(memo);
-                toastr.success(`成功导入 ${selectedEntries.length} 个条目到备忘录`);
+                toastr.success(`成功导入 ${selectedEntries.length} 个条目到备忘录的 "${targetFolder}" 文件夹`);
+                currentFolder = targetFolder;
                 switchTab('tab-memo');
+                renderFoldersBar();
                 renderMemoList();
             } else {
                 toastr.warning('请先勾选要导入的条目');
             }
+        });
+
+        // 绑定导入预设按钮事件 (只绑定一次)
+        $('#preset-memo-import-preset-btn').off('click').on('click', function() {
+            const targetFolder = $('#preset-memo-import-preset-folder').val() as string || '默认';
+            const selectedEntries: any[] = [];
+            $('.preset-entry-checkbox:checked').each(function() {
+                const $item = $(this).closest('.wb-entry-item');
+                selectedEntries.push($item.data('entry'));
+            });
+            
+            if (selectedEntries.length > 0) {
+                const memo = getMemoData();
+                const folders = getFolders();
+                if (!folders.includes(targetFolder)) {
+                    folders.push(targetFolder);
+                    saveFolders(folders);
+                }
+
+                selectedEntries.forEach(entry => {
+                    memo.push({
+                        id: 'memo_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9),
+                        name: entry.name || entry.id || '未命名条目',
+                        content: entry.content || '',
+                        enabled: true,
+                        role: entry.role || 'system',
+                        position: { type: 'relative' },
+                        folder: targetFolder
+                    });
+                });
+                saveMemoData(memo);
+                toastr.success(`成功导入 ${selectedEntries.length} 个条目到备忘录的 "${targetFolder}" 文件夹`);
+                currentFolder = targetFolder;
+                switchTab('tab-memo');
+                renderFoldersBar();
+                renderMemoList();
+            } else {
+                toastr.warning('请先勾选要导入的条目');
+            }
+        });
+
+        // 绑定新建文件夹按钮
+        function handleNewFolderClick(selectId: string) {
+            const name = prompt('请输入新文件夹名称:');
+            if (name && name.trim()) {
+                const folderName = name.trim();
+                const folders = getFolders();
+                if (folders.includes(folderName)) {
+                    toastr.warning('文件夹已存在');
+                } else {
+                    folders.push(folderName);
+                    saveFolders(folders);
+                    updateFolderSelects();
+                    renderFoldersBar();
+                }
+                $(`#${selectId}`).val(folderName);
+            }
+        }
+        $('#preset-memo-import-wb-new-folder-btn').off('click').on('click', () => handleNewFolderClick('preset-memo-import-wb-folder'));
+        $('#preset-memo-import-preset-new-folder-btn').off('click').on('click', () => handleNewFolderClick('preset-memo-import-preset-folder'));
+
+        // 绑定批量移动按钮事件
+        $('#preset-memo-batch-move-select').off('change').on('change', function() {
+            const targetFolder = $(this).val() as string;
+            if (!targetFolder) return;
+            
+            const selectedIndices: number[] = [];
+            $('.memo-entry-checkbox:checked').each(function() {
+                selectedIndices.push(parseInt($(this).data('index')));
+            });
+            
+            if (selectedIndices.length === 0) {
+                toastr.warning('请先勾选要移动的条目');
+                $(this).val('');
+                return;
+            }
+            
+            const memo = getMemoData();
+            selectedIndices.forEach(idx => {
+                memo[idx].folder = targetFolder;
+            });
+            saveMemoData(memo);
+            toastr.success(`已将 ${selectedIndices.length} 个条目移动到 "${targetFolder}"`);
+            $(this).val('');
+            renderMemoList();
         });
 
         // 绑定批量删除按钮事件
@@ -133,7 +260,17 @@ function openModal() {
         }
         // 强制使用 flex 布局显示，避免 jQuery 动画带来的 display 属性冲突
         $modal.css('display', 'flex');
+        
+        // 恢复主题
+        const theme = localStorage.getItem('preset-memo-theme');
+        if (theme === 'light') {
+            $('#preset-memo-modal-content').addClass('pm-light-mode');
+            $('#preset-memo-theme-btn').removeClass('fa-sun').addClass('fa-moon');
+        }
+        
         switchTab('tab-memo');
+        renderFoldersBar();
+        updateFolderSelects();
         renderMemoList();
     } catch (e) {
         console.error('Preset Memo Error:', e);
@@ -154,6 +291,8 @@ function switchTab(tabId: string) {
     
     if (tabId === 'tab-import') {
         loadWorldbooks();
+    } else if (tabId === 'tab-import-preset') {
+        loadPresets();
     } else if (tabId === 'tab-insert') {
         renderInsertView();
     } else if (tabId === 'tab-export-wb') {
@@ -162,17 +301,162 @@ function switchTab(tabId: string) {
 }
 
 // --- Tab 1: 备忘录管理 ---
+function updateFolderSelects() {
+    const folders = getFolders();
+    
+    // Batch move
+    const $batchMove = $('#preset-memo-batch-move-select');
+    $batchMove.empty().append('<option value="">批量移动到...</option>');
+    folders.forEach(f => {
+        if (f !== currentFolder) $batchMove.append(`<option value="${f}">${f}</option>`);
+    });
+    
+    // Import WB
+    const $wbSelect = $('#preset-memo-import-wb-folder');
+    const wbVal = $wbSelect.val() || '默认';
+    $wbSelect.empty();
+    folders.forEach(f => $wbSelect.append(`<option value="${f}">${f}</option>`));
+    if (folders.includes(wbVal as string)) $wbSelect.val(wbVal);
+    else $wbSelect.val('默认');
+    
+    // Import Preset
+    const $presetSelect = $('#preset-memo-import-preset-folder');
+    const presetVal = $presetSelect.val() || '默认';
+    $presetSelect.empty();
+    folders.forEach(f => $presetSelect.append(`<option value="${f}">${f}</option>`));
+    if (folders.includes(presetVal as string)) $presetSelect.val(presetVal);
+    else $presetSelect.val('默认');
+}
+
+function renderFoldersBar() {
+    const folders = getFolders();
+    const $bar = $('#preset-memo-folders-bar');
+    $bar.empty();
+
+    folders.forEach(folder => {
+        const isDefault = folder === '默认';
+        const $tab = $(`
+            <div class="pm-folder-tab ${folder === currentFolder ? 'active' : ''}" data-folder="${folder}">
+                <i class="fa-solid fa-folder"></i> <span class="folder-name">${folder}</span>
+                ${!isDefault ? `
+                    <i class="fa-solid fa-pen folder-edit" title="重命名文件夹"></i>
+                    <i class="fa-solid fa-xmark folder-delete" title="删除文件夹"></i>
+                ` : ''}
+            </div>
+        `);
+
+        $tab.on('click', function(e) {
+            if ($(e.target).hasClass('folder-delete') || $(e.target).hasClass('folder-edit')) return;
+            currentFolder = folder;
+            renderFoldersBar();
+            updateFolderSelects();
+            renderMemoList();
+        });
+
+        if (!isDefault) {
+            $tab.find('.folder-edit').on('click', function(e) {
+                e.stopPropagation();
+                const newName = prompt('请输入新的文件夹名称:', folder);
+                if (newName && newName.trim() && newName.trim() !== folder) {
+                    const trimmed = newName.trim();
+                    if (folders.includes(trimmed)) {
+                        toastr.warning('文件夹名已存在');
+                        return;
+                    }
+                    // Update folders
+                    const idx = folders.indexOf(folder);
+                    if (idx !== -1) folders[idx] = trimmed;
+                    saveFolders(folders);
+                    
+                    // Update memos
+                    const memo = getMemoData();
+                    memo.forEach(entry => {
+                        if (entry.folder === folder) entry.folder = trimmed;
+                    });
+                    saveMemoData(memo);
+                    
+                    if (currentFolder === folder) currentFolder = trimmed;
+                    renderFoldersBar();
+                    updateFolderSelects();
+                    renderMemoList();
+                    toastr.success('已重命名文件夹');
+                }
+            });
+
+            $tab.find('.folder-delete').on('click', function(e) {
+                e.stopPropagation();
+                if (confirm(`确定要删除文件夹 "${folder}" 吗？\n其中的条目将被移动到"默认"文件夹。`)) {
+                    // 移动条目
+                    const memo = getMemoData();
+                    memo.forEach(entry => {
+                        if (entry.folder === folder) {
+                            entry.folder = '默认';
+                        }
+                    });
+                    saveMemoData(memo);
+
+                    // 删除文件夹
+                    const newFolders = folders.filter(f => f !== folder);
+                    saveFolders(newFolders);
+
+                    if (currentFolder === folder) {
+                        currentFolder = '默认';
+                    }
+                    renderFoldersBar();
+                    updateFolderSelects();
+                    renderMemoList();
+                    toastr.success('已删除文件夹');
+                }
+            });
+        }
+
+        $bar.append($tab);
+    });
+
+    // 新建文件夹按钮
+    const $newBtn = $(`
+        <div class="pm-folder-tab" style="border-style: dashed;">
+            <i class="fa-solid fa-plus"></i> 新建文件夹
+        </div>
+    `);
+    $newBtn.on('click', function() {
+        const name = prompt('请输入新文件夹名称:');
+        if (name && name.trim()) {
+            const folderName = name.trim();
+            if (folders.includes(folderName)) {
+                toastr.warning('文件夹已存在');
+                return;
+            }
+            folders.push(folderName);
+            saveFolders(folders);
+            currentFolder = folderName;
+            renderFoldersBar();
+            updateFolderSelects();
+            renderMemoList();
+        }
+    });
+    $bar.append($newBtn);
+}
+
 function renderMemoList() {
     const memo = getMemoData();
+    const folders = getFolders();
     const $list = $('#preset-memo-list');
     $list.empty();
     
-    if (memo.length === 0) {
-        $list.append('<div class="pm-empty-state">备忘录为空，请从世界书导入。</div>');
+    // 过滤当前文件夹的条目
+    const currentMemo = memo.filter(entry => (entry.folder || '默认') === currentFolder);
+    
+    if (currentMemo.length === 0) {
+        $list.append('<div class="pm-empty-state">当前文件夹为空。</div>');
         return;
     }
     
-    memo.forEach((entry, index) => {
+    currentMemo.forEach((entry) => {
+        // 找到在原始数组中的索引，以便修改和删除
+        const index = memo.findIndex(e => e.id === entry.id);
+        if (index === -1) return;
+
         const $item = $(`
             <div class="memo-entry-item">
                 <div class="memo-header">
@@ -181,6 +465,9 @@ function renderMemoList() {
                         <input type="text" class="text_pole memo-entry-name" value="${entry.name}">
                     </div>
                     <div class="memo-right">
+                        <select class="text_pole memo-entry-folder" title="所属文件夹">
+                            ${folders.map(f => `<option value="${f}" ${f === (entry.folder || '默认') ? 'selected' : ''}>${f}</option>`).join('')}
+                        </select>
                         <select class="text_pole memo-entry-role">
                             <option value="system" ${entry.role === 'system' ? 'selected' : ''}>System</option>
                             <option value="user" ${entry.role === 'user' ? 'selected' : ''}>User</option>
@@ -202,6 +489,11 @@ function renderMemoList() {
             memo[index].role = $(this).val() as 'system' | 'user' | 'assistant';
             saveMemoData(memo);
         });
+        $item.find('.memo-entry-folder').on('change', function() {
+            memo[index].folder = $(this).val() as string;
+            saveMemoData(memo);
+            renderMemoList(); // 重新渲染以移出当前列表
+        });
         $item.find('.memo-entry-content').on('change', function() {
             memo[index].content = $(this).val() as string;
             saveMemoData(memo);
@@ -221,37 +513,85 @@ function renderMemoList() {
     });
 }
 
+function setupSearchableSelect($container: JQuery, options: string[], onChange: (val: string) => void, allowCustom: boolean = false) {
+    const $input = $container.find('.pm-select-input');
+    const $dropdown = $container.find('.pm-select-dropdown');
+    
+    function renderOptions(filter: string = '') {
+        $dropdown.empty();
+        const filtered = options.filter(opt => opt.toLowerCase().includes(filter.toLowerCase()));
+        
+        if (filtered.length === 0) {
+            $dropdown.append('<div class="pm-select-empty">无匹配项</div>');
+        } else {
+            filtered.forEach(opt => {
+                const $opt = $(`<div class="pm-select-option">${opt}</div>`);
+                $opt.on('mousedown', function(e) {
+                    e.preventDefault(); // 防止 input 失去焦点
+                    $input.val(opt);
+                    $dropdown.hide();
+                    onChange(opt);
+                });
+                $dropdown.append($opt);
+            });
+        }
+    }
+    
+    $input.off('focus').on('focus', function() {
+        renderOptions($input.val() as string);
+        $dropdown.show();
+    });
+    
+    $input.off('input').on('input', function() {
+        renderOptions($input.val() as string);
+        $dropdown.show();
+        if (allowCustom) {
+            onChange($input.val() as string);
+        }
+    });
+    
+    $input.off('blur').on('blur', function() {
+        setTimeout(() => {
+            $dropdown.hide();
+            if (!allowCustom) {
+                const val = $input.val() as string;
+                if (!options.includes(val)) {
+                    $input.val('');
+                    onChange('');
+                } else {
+                    onChange(val);
+                }
+            }
+        }, 150);
+    });
+    
+    // 点击箭头图标区域也触发 focus
+    $input.off('click').on('click', function() {
+        if (!$dropdown.is(':visible')) {
+            renderOptions($input.val() as string);
+            $dropdown.show();
+        }
+    });
+}
+
 // --- Tab 2: 从世界书导入 ---
-let currentWbNames: string[] = [];
 
 async function loadWorldbooks() {
     try {
         const wbNames = getWorldbookNames();
-        currentWbNames = wbNames;
         
-        const $input = $('#preset-memo-wb-search');
-        const $datalist = $('#preset-memo-wb-datalist');
-        
-        // 渲染 datalist 选项
-        $datalist.empty();
-        wbNames.forEach(name => {
-            $datalist.append(`<option value="${name}">`);
-        });
-
-        // 监听输入和选择事件
-        $input.off('input').on('input', async (e) => {
-            const val = $(e.target).val() as string;
-            
-            // 如果输入的值完全匹配某个世界书名称，则加载它
-            if (wbNames.includes(val)) {
+        const $container = $('#preset-memo-wb-select-container');
+        setupSearchableSelect($container, wbNames, async (val) => {
+            if (val) {
                 await selectWorldbook(val);
-            } 
-            // 如果清空了输入框，则清空条目列表
-            else if (!val) {
+            } else {
                 $('#preset-memo-wb-entries').empty().append('<div class="pm-empty-state">请先在上方选择一本世界书。</div>');
                 updateImportCount();
             }
         });
+
+        // 初始化文件夹选择器
+        updateFolderSelects();
 
     } catch (e) {
         console.error('获取世界书列表失败:', e);
@@ -359,9 +699,142 @@ function updateImportCount() {
     $('#preset-memo-import-count').text(`已选中 ${count} 个条目`);
 }
 
+// --- Tab 2.5: 从预设导入 ---
+async function loadPresets() {
+    try {
+        const presetNames = getPresetNames();
+        
+        const $container = $('#preset-memo-preset-select-container');
+        setupSearchableSelect($container, presetNames, async (val) => {
+            if (val) {
+                await selectPreset(val);
+            } else {
+                $('#preset-memo-preset-entries').empty().append('<div class="pm-empty-state">请先在上方选择一个预设。</div>');
+                updateImportPresetCount();
+            }
+        });
+
+        // 初始化文件夹选择器
+        updateFolderSelects();
+
+    } catch (e) {
+        console.error('获取预设列表失败:', e);
+        toastr.error('获取预设列表失败');
+    }
+}
+
+async function selectPreset(selectedPreset: string) {
+    if (selectedPreset) {
+        try {
+            const preset = getPreset(selectedPreset);
+            renderPresetEntries(preset.prompts || [], selectedPreset);
+        } catch (e) {
+            console.error('读取预设失败:', e);
+            toastr.error('读取预设失败');
+        }
+    } else {
+        $('#preset-memo-preset-entries').empty().append('<div class="pm-empty-state">请先在上方选择一个预设。</div>');
+        updateImportPresetCount();
+    }
+}
+
+function renderPresetEntries(entries: any[], presetName: string) {
+    const $list = $('#preset-memo-preset-entries');
+    $list.empty();
+    
+    if (!entries || entries.length === 0) {
+        $list.append('<div class="pm-empty-state">该预设为空。</div>');
+        updateImportPresetCount();
+        return;
+    }
+    
+    entries.forEach((entry, index) => {
+        const $item = $(`
+            <div class="wb-entry-item" data-index="${index}">
+                <div class="wb-entry-header">
+                    <input type="checkbox" class="preset-entry-checkbox" data-index="${index}" style="margin-top: 4px;">
+                    <div class="wb-content">
+                        <div class="wb-title">${entry.name || entry.id} <span class="role-tag">(${entry.role || 'system'})</span></div>
+                        <div class="wb-desc">${(entry.content || '').substring(0, 100)}...</div>
+                    </div>
+                    <div class="wb-actions" title="查看/编辑">
+                        <i class="fa-solid fa-pen"></i>
+                    </div>
+                </div>
+                <div class="wb-entry-edit" style="display: none;">
+                    <input type="text" class="text_pole edit-name" value="${entry.name || entry.id || ''}">
+                    <select class="text_pole edit-role">
+                        <option value="system" ${entry.role === 'system' ? 'selected' : ''}>System</option>
+                        <option value="user" ${entry.role === 'user' ? 'selected' : ''}>User</option>
+                        <option value="assistant" ${entry.role === 'assistant' ? 'selected' : ''}>Assistant</option>
+                    </select>
+                    <textarea class="text_pole edit-content">${entry.content || ''}</textarea>
+                    <div class="save-btn save-preset-entry-btn"><i class="fa-solid fa-floppy-disk"></i> 保存修改</div>
+                </div>
+            </div>
+        `);
+
+        // Toggle checkbox when clicking the content area
+        $item.find('.wb-content').on('click', function() {
+            const $cb = $item.find('.preset-entry-checkbox');
+            $cb.prop('checked', !$cb.prop('checked'));
+            updateImportPresetCount();
+        });
+
+        $item.find('.preset-entry-checkbox').on('change', updateImportPresetCount);
+
+        // Toggle edit view
+        $item.find('.wb-actions').on('click', function(e) {
+            e.stopPropagation();
+            $item.find('.wb-entry-edit').slideToggle(200);
+        });
+
+        // Save edits back to preset
+        $item.find('.save-preset-entry-btn').on('click', async function() {
+            const newName = $item.find('.edit-name').val() as string;
+            const newRole = $item.find('.edit-role').val() as 'system' | 'user' | 'assistant';
+            const newContent = $item.find('.edit-content').val() as string;
+            
+            try {
+                await updatePresetWith(presetName, (p) => {
+                    const target = p.prompts[index];
+                    if (target) {
+                        target.name = newName;
+                        target.role = newRole;
+                        target.content = newContent;
+                    }
+                    return p;
+                });
+                toastr.success('已保存到预设');
+                // Update local data so import uses new data
+                entry.name = newName;
+                entry.role = newRole;
+                entry.content = newContent;
+                $item.find('.wb-title').html(`${newName} <span class="role-tag">(${newRole})</span>`);
+                $item.find('.wb-desc').text((newContent || '').substring(0, 100) + '...');
+                $item.find('.wb-entry-edit').slideUp(200);
+            } catch (e) {
+                console.error(e);
+                toastr.error('保存失败');
+            }
+        });
+
+        $item.data('entry', entry);
+        $list.append($item);
+    });
+    
+    updateImportPresetCount();
+}
+
+function updateImportPresetCount() {
+    const count = $('.preset-entry-checkbox:checked').length;
+    $('#preset-memo-import-preset-count').text(`已选中 ${count} 个条目`);
+}
+
 // --- Tab 3: 插入位置选择 ---
 function renderInsertView() {
     const selectedMemoIndices: number[] = [];
+    // 只有当前文件夹下被勾选的才会被插入
     $('.memo-entry-checkbox:checked').each(function() {
         selectedMemoIndices.push(parseInt($(this).data('index')));
     });
@@ -561,11 +1034,10 @@ function renderExportView() {
 
     // Setup datalist for existing worldbooks
     const wbNames = getWorldbookNames();
-    const $datalist = $('#preset-memo-export-datalist');
-    $datalist.empty();
-    wbNames.forEach(name => {
-        $datalist.append(`<option value="${name}">`);
-    });
+    const $container = $('#preset-memo-export-target-container');
+    setupSearchableSelect($container, wbNames, () => {
+        // 允许自定义输入，不需要额外处理，因为 input 的值已经被更新
+    }, true);
 
     // Bind export button
     $('#preset-memo-export-btn').off('click').on('click', async function() {
