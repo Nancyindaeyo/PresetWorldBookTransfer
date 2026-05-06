@@ -21,6 +21,35 @@
     }
 
     #preset-memo-modal-content {
+        /* 独立于酒馆主题的变量定义 */
+        --pm-bg: #1a1a1a;
+        --pm-text: #eeeeee;
+        --pm-border: #444444;
+        --pm-item-bg: rgba(0, 0, 0, 0.5);
+        --pm-hover: rgba(255, 255, 255, 0.1);
+        --pm-primary: #0066cc;
+        --pm-primary-text: #ffffff;
+        --pm-tab-bg: rgba(0, 0, 0, 0.5);
+        --pm-input-bg: rgba(0, 0, 0, 0.5);
+        --pm-input-text: #eeeeee;
+        --pm-info-bg: rgba(0, 0, 0, 0.2);
+        --pm-danger: #ff3b3b;
+
+        &.pm-light-mode {
+            --pm-bg: #f5f5f5;
+            --pm-text: #333333;
+            --pm-border: #cccccc;
+            --pm-item-bg: #ffffff;
+            --pm-hover: #e8e8e8;
+            --pm-primary: #0066cc;
+            --pm-primary-text: #ffffff;
+            --pm-tab-bg: #e0e0e0;
+            --pm-input-bg: #ffffff;
+            --pm-input-text: #333333;
+            --pm-info-bg: #e6f2ff;
+            --pm-danger: #ff3b3b;
+        }
+
         position: relative;
         width: 90%;
         max-width: 800px;
@@ -28,126 +57,20 @@
         display: flex;
         flex-direction: column;
         border-radius: 8px;
-        background-color: var(--SmartThemeBodyBackground, #1a1a1a);
-        color: var(--SmartThemeBodyColor);
-        border: 1px solid var(--SmartThemeBorderColor);
+        background-color: var(--pm-bg) !important;
+        color: var(--pm-text) !important;
+        border: 1px solid var(--pm-border) !important;
         box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
         transition: background-color 0.3s, color 0.3s;
     }
 
-    #preset-memo-modal-content.pm-light-mode {
-        background-color: #f5f5f5;
-        color: #333;
-        border-color: #ccc;
-
-        .pm-tabs {
-            background-color: #e0e0e0 !important;
-            border-bottom-color: #ccc !important;
-        }
-
-        .pm-tab-btn:hover {
-            background-color: #d0d0d0 !important;
-        }
-
-        .pm-tab-btn.active {
-            background-color: #f5f5f5 !important;
-            color: #0066cc !important;
-            border-bottom-color: #0066cc !important;
-        }
-
-        .pm-sticky-footer,
-        .pm-wb-list,
-        .pm-insert-list,
-        .memo-entry-item,
-        .wb-entry-item,
-        .preset-prompt-item {
-            background-color: #ffffff !important;
-            border-color: #ccc !important;
-        }
-
-        .memo-entry-item:hover,
-        .wb-entry-item:hover,
-        .preset-prompt-item:hover {
-            background-color: #f9f9f9 !important;
-        }
-
-        .pm-select-dropdown {
-            background-color: #ffffff !important;
-            border-color: #ccc !important;
-        }
-
-        .pm-select-option:hover {
-            background-color: #f0f0f0 !important;
-        }
-
-        .pm-select-option {
-            border-bottom-color: #eee !important;
-            color: #333 !important;
-        }
-
-        .pm-info-box {
-            background-color: #e6f2ff;
-            border-color: #0066cc;
-            color: #333;
-            i { color: #0066cc; }
-        }
-
-        .pm-btn-primary {
-            background-color: #0066cc !important;
-            color: #fff !important;
-        }
-
-        .menu_button {
-            background-color: #e0e0e0 !important;
-            color: #333 !important;
-            border-color: #ccc !important;
-
-            &:hover {
-                background-color: #d0d0d0 !important;
-            }
-        }
-
-        input.text_pole,
-        select.text_pole,
-        textarea.text_pole,
-        .pm-select-input {
-            background-color: #fff !important;
-            color: #333 !important;
-            border: 1px solid #ccc !important;
-        }
-
-        .pm-folders-bar {
-            border-bottom-color: #ccc;
-        }
-
-        .pm-folder-tab {
-            background-color: #e0e0e0 !important;
-            color: #555 !important;
-            border-color: #ccc !important;
-        }
-
-        .pm-folder-tab:hover {
-            background-color: #d0d0d0 !important;
-        }
-
-        .pm-folder-tab.active {
-            background-color: #0066cc !important;
-            color: #fff !important;
-            border-color: #0066cc !important;
-        }
-
-        #preset-memo-batch-delete-btn {
-            color: #ff3b3b !important;
-            border-color: #ff3b3b !important;
-        }
-    }
 
     .pm-header {
         display: flex;
         justify-content: space-between;
         align-items: center;
         padding: 15px 20px;
-        border-bottom: 1px solid var(--SmartThemeBorderColor);
+        border-bottom: 1px solid var(--pm-border) !important;
 
         .pm-title {
             font-size: 1.25rem;
@@ -158,8 +81,8 @@
 
     .pm-tabs {
         display: flex;
-        background-color: var(--black50a);
-        border-bottom: 1px solid var(--SmartThemeBorderColor);
+        background-color: var(--pm-tab-bg) !important;
+        border-bottom: 1px solid var(--pm-border) !important;
 
         .pm-tab-btn {
             padding: 10px 20px;
@@ -169,13 +92,13 @@
             transition: all 0.2s;
 
             &:hover {
-                background-color: var(--SmartThemeHoverColor);
+                background-color: var(--pm-hover) !important;
             }
 
             &.active {
-                border-bottom-color: var(--SmartThemeQuoteColor);
-                background-color: var(--SmartThemeHoverColor);
-                color: var(--SmartThemeQuoteColor);
+                border-bottom-color: var(--pm-primary) !important;
+                background-color: var(--pm-bg) !important;
+                color: var(--pm-primary) !important;
             }
         }
     }
@@ -198,28 +121,28 @@
         gap: 8px;
         margin-bottom: 15px;
         padding-bottom: 10px;
-        border-bottom: 1px solid var(--SmartThemeBorderColor);
+        border-bottom: 1px solid var(--pm-border) !important;
 
         .pm-folder-tab {
             display: flex;
             align-items: center;
             gap: 5px;
             padding: 6px 12px;
-            background-color: var(--black50a);
-            border: 1px solid var(--SmartThemeBorderColor);
+            background-color: var(--pm-tab-bg) !important;
+            border: 1px solid var(--pm-border) !important;
             border-radius: 16px;
             font-size: 0.85rem;
             cursor: pointer;
             transition: all 0.2s;
 
             &:hover {
-                background-color: var(--SmartThemeHoverColor);
+                background-color: var(--pm-hover) !important;
             }
 
             &.active {
-                background-color: var(--SmartThemeQuoteColor);
-                color: var(--SmartThemeBodyBackground);
-                border-color: var(--SmartThemeQuoteColor);
+                background-color: var(--pm-primary) !important;
+                color: var(--pm-primary-text) !important;
+                border-color: var(--pm-primary) !important;
             }
 
             .folder-delete,
@@ -234,11 +157,11 @@
             }
 
             .folder-delete:hover {
-                color: #ff6b6b;
+                color: var(--pm-danger) !important;
             }
 
             .folder-edit:hover {
-                color: var(--SmartThemeQuoteColor);
+                color: var(--pm-primary) !important;
             }
         }
     }
@@ -268,8 +191,8 @@
         justify-content: space-between;
         align-items: center;
         padding: 12px 15px;
-        background-color: var(--black50a);
-        border: 1px solid var(--SmartThemeBorderColor);
+        background-color: var(--pm-item-bg) !important;
+        border: 1px solid var(--pm-border) !important;
         border-radius: 6px;
         margin-top: 10px;
 
@@ -277,8 +200,8 @@
             display: flex;
             align-items: center;
             gap: 5px;
-            background-color: var(--SmartThemeQuoteColor);
-            color: var(--SmartThemeBodyBackground);
+            background-color: var(--pm-primary) !important;
+            color: var(--pm-primary-text) !important;
             padding: 8px 16px;
             border-radius: 4px;
             font-weight: bold;
@@ -298,8 +221,8 @@
 
     .pm-wb-list,
     .pm-insert-list {
-        border: 1px solid var(--SmartThemeBorderColor);
-        background-color: var(--black50a);
+        border: 1px solid var(--pm-border) !important;
+        background-color: var(--pm-item-bg) !important;
         border-radius: 6px;
         padding: 10px;
         min-height: 200px;
@@ -330,15 +253,31 @@
     }
 
     .pm-info-box {
-        border: 1px solid var(--SmartThemeQuoteColor);
-        background-color: rgba(0, 0, 0, 0.2);
+        border: 1px solid var(--pm-primary) !important;
+        background-color: var(--pm-info-bg) !important;
         padding: 10px 15px;
         border-radius: 6px;
         margin-bottom: 15px;
         font-size: 0.9rem;
 
         i {
-            color: var(--SmartThemeQuoteColor);
+            color: var(--pm-primary) !important;
+        }
+    }
+
+    /* Default (Dark) Mode Inputs */
+    input.text_pole,
+    select.text_pole,
+    textarea.text_pole,
+    .pm-select-input {
+        background-color: var(--pm-input-bg) !important;
+        color: var(--pm-input-text) !important;
+        border: 1px solid var(--pm-border) !important;
+        border-radius: 4px;
+        
+        &:focus {
+            outline: none;
+            border-color: var(--pm-primary) !important;
         }
     }
 
@@ -346,8 +285,8 @@
     .memo-entry-item,
     .wb-entry-item,
     .preset-prompt-item {
-        background-color: var(--black50a);
-        border: 1px solid var(--SmartThemeBorderColor);
+        background-color: var(--pm-item-bg) !important;
+        border: 1px solid var(--pm-border) !important;
         border-radius: 6px;
         padding: 10px;
         transition: background-color 0.2s;
@@ -355,7 +294,7 @@
         box-sizing: border-box;
 
         &:hover {
-            background-color: var(--SmartThemeHoverColor);
+            background-color: var(--pm-hover) !important;
         }
     }
 
@@ -447,7 +386,7 @@
             flex-direction: column;
             gap: 8px;
             padding-top: 10px;
-            border-top: 1px dashed var(--SmartThemeBorderColor);
+            border-top: 1px dashed var(--pm-border) !important;
 
             input,
             select {
@@ -466,8 +405,8 @@
 
             .save-btn {
                 align-self: flex-end;
-                background-color: var(--SmartThemeQuoteColor);
-                color: var(--SmartThemeBodyBackground);
+                background-color: var(--pm-primary) !important;
+                color: var(--pm-primary-text) !important;
                 padding: 6px 12px;
                 border-radius: 4px;
                 cursor: pointer;
@@ -505,8 +444,8 @@
             right: 0;
             max-height: 200px;
             overflow-y: auto;
-            background-color: var(--SmartThemeBodyBackground, #1a1a1a);
-            border: 1px solid var(--SmartThemeBorderColor);
+            background-color: var(--pm-bg) !important;
+            border: 1px solid var(--pm-border) !important;
             border-radius: 4px;
             z-index: 1000;
             box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
@@ -514,10 +453,10 @@
             .pm-select-option {
                 padding: 8px 12px;
                 cursor: pointer;
-                border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+                border-bottom: 1px solid var(--pm-border) !important;
 
                 &:hover {
-                    background-color: var(--SmartThemeHoverColor);
+                    background-color: var(--pm-hover) !important;
                 }
             }
 
@@ -542,8 +481,8 @@
         }
 
         .insert-btn {
-            background-color: var(--SmartThemeQuoteColor);
-            color: var(--SmartThemeBodyBackground);
+            background-color: var(--pm-primary) !important;
+            color: var(--pm-primary-text) !important;
             font-size: 0.75rem;
             padding: 4px 12px;
             border-radius: 999px;
@@ -554,8 +493,8 @@
     }
 
     .preset-prompt-item {
-        background-color: var(--black50a);
-        border-left: 4px solid var(--SmartThemeBorderColor);
+        background-color: var(--pm-item-bg) !important;
+        border-left: 4px solid var(--pm-border) !important;
         padding: 8px 12px;
         border-radius: 4px;
         font-size: 0.9rem;
@@ -584,8 +523,7 @@
             max-height: 100vh !important;
             border-radius: 0 !important;
             border: none !important;
-            background-color: var(--SmartThemeBodyBackground, #1a1a1a) !important;
-            /* 修复：之前误用了BodyColor导致背景变白 */
+            background-color: var(--pm-bg) !important;
             z-index: 10;
         }
 
