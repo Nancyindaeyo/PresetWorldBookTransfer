@@ -1,0 +1,167 @@
+<div id="preset-memo-modal" style="display: none;">
+    <div id="preset-memo-modal-overlay"></div>
+    <div id="preset-memo-modal-content">
+        
+        <!-- Header -->
+        <div class="pm-header">
+            <h2 class="pm-title"><i class="fa-solid fa-book-bookmark"></i> 预设备忘录</h2>
+            <div style="display: flex; gap: 10px;">
+                <div id="preset-memo-theme-btn" class="menu_button fa-solid fa-sun interactable" tabindex="0" role="button" title="切换日夜间模式"></div>
+                <div id="preset-memo-close-btn" class="menu_button fa-solid fa-xmark interactable" tabindex="0" role="button" title="关闭"></div>
+            </div>
+        </div>
+        
+        <!-- Tabs -->
+        <div class="pm-tabs">
+            <div class="pm-tab-btn active" data-tab="tab-memo">
+                <i class="fa-solid fa-list"></i> 备忘录管理
+            </div>
+            <div class="pm-tab-btn" data-tab="tab-import">
+                <i class="fa-solid fa-download"></i> 从世界书导入
+            </div>
+            <div class="pm-tab-btn" data-tab="tab-import-preset">
+                <i class="fa-solid fa-file-import"></i> 从预设导入
+            </div>
+            <div class="pm-tab-btn" data-tab="tab-insert">
+                <i class="fa-solid fa-arrow-right-to-bracket"></i> 插入到当前预设
+            </div>
+            <div class="pm-tab-btn" data-tab="tab-export-wb">
+                <i class="fa-solid fa-upload"></i> 导出到世界书
+            </div>
+        </div>
+        
+        <!-- Content Area -->
+        <div class="pm-content-area">
+            
+            <!-- Tab 1: 备忘录管理 -->
+            <div id="tab-memo" class="pm-tab-content">
+                <div class="pm-folders-bar" id="preset-memo-folders-bar">
+                    <!-- 文件夹列表将在这里渲染 -->
+                </div>
+                <div class="pm-toolbar">
+                    <div class="pm-hint">勾选条目后，切换到“插入到当前预设”标签页进行操作。</div>
+                    <div class="pm-toolbar-actions" style="display: flex; gap: 8px; align-items: center;">
+                        <select id="preset-memo-batch-move-select" class="text_pole" style="padding: 4px 8px; border-radius: 4px; height: 32px;">
+                            <option value="">批量移动到...</option>
+                        </select>
+                        <div id="preset-memo-batch-delete-btn" class="menu_button interactable pm-btn" style="color: #ff6b6b; border-color: #ff6b6b; height: 32px; box-sizing: border-box;">
+                            <i class="fa-solid fa-trash"></i> 删除
+                        </div>
+                        <div class="menu_button interactable pm-btn" onclick="$('.pm-tab-btn[data-tab=\'tab-import\']').click()" style="height: 32px; box-sizing: border-box;">
+                            <i class="fa-solid fa-plus"></i> 导入
+                        </div>
+                    </div>
+                </div>
+                <div id="preset-memo-list" class="pm-list">
+                    <!-- 备忘录列表将在这里渲染 -->
+                </div>
+            </div>
+            
+            <!-- Tab 2: 从世界书导入 -->
+            <div id="tab-import" class="pm-tab-content" style="display: none; display: flex; flex-direction: column; height: 100%;">
+                <div class="pm-form-group">
+                    <label>选择世界书</label>
+                    <div class="pm-searchable-select" id="preset-memo-wb-select-container">
+                        <input type="text" class="text_pole pm-select-input" placeholder="点击选择或输入搜索..." autocomplete="off">
+                        <div class="pm-select-dropdown" style="display: none;"></div>
+                    </div>
+                </div>
+                
+                <div class="pm-sticky-footer">
+                    <div style="display: flex; gap: 10px; align-items: center; margin-bottom: 10px;">
+                        <label style="white-space: nowrap;">导入到文件夹:</label>
+                        <select id="preset-memo-import-wb-folder" class="text_pole" style="flex: 1;"></select>
+                        <div id="preset-memo-import-wb-new-folder-btn" class="menu_button interactable pm-btn" title="新建文件夹" style="margin: 0; padding: 8px 12px;">
+                            <i class="fa-solid fa-folder-plus"></i>
+                        </div>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <div class="pm-hint" id="preset-memo-import-count">已选中 0 个条目</div>
+                        <div id="preset-memo-import-btn" class="menu_button interactable pm-btn-primary">
+                            <i class="fa-solid fa-download"></i> 导入
+                        </div>
+                    </div>
+                </div>
+
+                <div id="preset-memo-wb-entries" class="pm-list pm-wb-list" style="flex: 1; margin-bottom: 10px;">
+                    <!-- 世界书条目将在这里渲染 -->
+                    <div class="pm-empty-state">请先在上方选择一本世界书。</div>
+                </div>
+
+            </div>
+            
+            <!-- Tab 2.5: 从预设导入 -->
+            <div id="tab-import-preset" class="pm-tab-content" style="display: none; display: flex; flex-direction: column; height: 100%;">
+                <div class="pm-form-group">
+                    <label>选择预设</label>
+                    <div class="pm-searchable-select" id="preset-memo-preset-select-container">
+                        <input type="text" class="text_pole pm-select-input" placeholder="点击选择或输入搜索..." autocomplete="off">
+                        <div class="pm-select-dropdown" style="display: none;"></div>
+                    </div>
+                </div>
+                
+                <div class="pm-sticky-footer">
+                    <div style="display: flex; gap: 10px; align-items: center; margin-bottom: 10px;">
+                        <label style="white-space: nowrap;">导入到文件夹:</label>
+                        <select id="preset-memo-import-preset-folder" class="text_pole" style="flex: 1;"></select>
+                        <div id="preset-memo-import-preset-new-folder-btn" class="menu_button interactable pm-btn" title="新建文件夹" style="margin: 0; padding: 8px 12px;">
+                            <i class="fa-solid fa-folder-plus"></i>
+                        </div>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <div class="pm-hint" id="preset-memo-import-preset-count">已选中 0 个条目</div>
+                        <div id="preset-memo-import-preset-btn" class="menu_button interactable pm-btn-primary">
+                            <i class="fa-solid fa-download"></i> 导入
+                        </div>
+                    </div>
+                </div>
+
+                <div id="preset-memo-preset-entries" class="pm-list pm-wb-list" style="flex: 1; margin-bottom: 10px;">
+                    <!-- 预设条目将在这里渲染 -->
+                    <div class="pm-empty-state">请先在上方选择一个预设。</div>
+                </div>
+
+            </div>
+            
+            <!-- Tab 3: 插入到当前预设 -->
+            <div id="tab-insert" class="pm-tab-content" style="display: none; display: flex; flex-direction: column; height: 100%;">
+                <div class="pm-info-box">
+                    <i class="fa-solid fa-circle-info"></i> 将在 Tab 1 中勾选的备忘录条目，插入到当前正在使用的预设（in_use）中。
+                </div>
+                
+                <div id="preset-memo-insert-container" class="pm-list pm-insert-list" style="flex: 1;">
+                    <!-- 插入视图将在这里渲染 -->
+                </div>
+            </div>
+            
+            <!-- Tab 4: 导出到世界书 -->
+            <div id="tab-export-wb" class="pm-tab-content" style="display: none; display: flex; flex-direction: column; height: 100%;">
+                <div class="pm-info-box">
+                    <i class="fa-solid fa-circle-info"></i> 勾选当前预设中的条目，将它们导出为世界书条目。
+                </div>
+                
+                <div class="pm-sticky-footer" style="flex-direction: column; align-items: stretch; gap: 10px;">
+                    <div style="display: flex; gap: 10px; align-items: center;">
+                        <label style="white-space: nowrap;">目标世界书:</label>
+                        <div class="pm-searchable-select" id="preset-memo-export-target-container" style="flex: 1;">
+                            <input type="text" id="preset-memo-export-target" class="text_pole pm-select-input" placeholder="输入新名称或选择已有..." autocomplete="off">
+                            <div class="pm-select-dropdown" style="display: none;"></div>
+                        </div>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <div class="pm-hint" id="preset-memo-export-count">已选中 0 个条目</div>
+                        <div id="preset-memo-export-btn" class="menu_button interactable pm-btn-primary">
+                            <i class="fa-solid fa-upload"></i> 导出
+                        </div>
+                    </div>
+                </div>
+
+                <div id="preset-memo-export-list" class="pm-list pm-wb-list" style="flex: 1; margin-bottom: 10px;">
+                    <!-- 预设条目列表将在这里渲染 -->
+                </div>
+
+            </div>
+            
+        </div>
+    </div>
+</div>
