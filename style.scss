@@ -506,52 +506,41 @@
         }
     }
 
-    /* Mobile Adaptation */
-    @media screen and (max-width: 768px) {
-        #preset-memo-modal {
-            padding: 0;
-            display: block !important;
-            /* 取消 flex 居中，使用绝对定位铺满 */
-        }
+@media screen and (max-width: 768px) {
+    #preset-memo-modal {
+        /* 确保模态框背景不会切断内容 */
+        align-items: flex-start; 
+        overflow: hidden; 
+    }
 
-        #preset-memo-modal-content {
-            position: absolute !important;
-            top: 0 !important;
-            left: 0 !important;
-            width: 100vw !important;
-            height: 100vh !important;
-            max-height: 100vh !important;
-            border-radius: 0 !important;
-            border: none !important;
-            background-color: var(--pm-bg) !important;
-            z-index: 10;
-        }
+    #preset-memo-modal-content {
+        /* 核心修改：确保高度包含所有内容且支持 flex 内部滚动 */
+        height: 100% !important; 
+        max-height: 100% !important;
+        width: 100% !important;
+        border-radius: 0 !important;
+        position: relative !important; /* 改变绝对定位可能引起的布局塌陷 */
+    }
 
-        .pm-tabs {
-            flex-wrap: nowrap;
-            overflow-x: auto;
-            -webkit-overflow-scrolling: touch;
+    /* 必须：让内容区域在 header 和 tabs 占据空间后，自动填满剩余空间并滚动 */
+    .pm-content-area {
+        flex: 1; 
+        overflow-y: auto !important; 
+        -webkit-overflow-scrolling: touch;
+        padding: 10px;
+        /* 关键：给底部留出空间，防止内容被遮挡 */
+        padding-bottom: 20px; 
+    }
 
-            .pm-tab-btn {
-                flex: 0 0 auto;
-                padding: 12px 15px;
-                white-space: nowrap;
-            }
-        }
+    /* 优化：如果是 Tab 2/2.5/4 这种带 footer 的布局，确保内容区高度受限 */
+    .pm-tab-content[style*="flex-direction: column"] {
+        height: 100%;
+        display: flex !important;
+    }
 
-        .memo-header {
-            flex-direction: column;
-            align-items: flex-start !important;
-            gap: 10px;
-
-            .memo-left,
-            .memo-right {
-                width: 100%;
-            }
-        }
-
-        .pm-content-area {
-            padding: 10px;
-        }
+    /* 确保列表部分在 flex 布局下能正确滚动 */
+    .pm-wb-list {
+        flex: 1;
+        min-height: 100px; /* 防止被 footer 压缩到消失 */
     }
 }
