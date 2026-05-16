@@ -53,10 +53,9 @@
         position: relative;
         width: 90%;
         max-width: 800px;
+        height: 85vh; /* 确保有足够的高度显示内容 */
         max-height: 85vh;
         display: flex;
-        overflow: hidden;
-        min-height: 0;
         flex-direction: column;
         border-radius: 8px;
         background-color: var(--pm-bg) !important;
@@ -78,6 +77,98 @@
             font-size: 1.25rem;
             font-weight: bold;
             margin: 0;
+        }
+    }
+
+    /* 悬浮球 (FAB) 样式 */
+    .pm-fab-container {
+        position: absolute;
+        top: 15px;
+        right: 20px;
+        z-index: 2147483647 !important; /* 确保悬浮球在最顶层 */
+        display: flex;
+        flex-direction: row-reverse;
+        align-items: center;
+        gap: 10px;
+        transition: transform 0.2s;
+
+        /* 拖拽时光标变化 */
+        &.is-dragging {
+            cursor: grabbing !important;
+            opacity: 0.8;
+            .pm-fab-toggle {
+                cursor: grabbing !important;
+            }
+        }
+    }
+
+    .pm-fab-toggle {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        background-color: var(--pm-primary) !important;
+        color: var(--pm-primary-text) !important;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: grab;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+        font-size: 1.2rem;
+        transition: transform 0.3s, background-color 0.2s;
+        flex-shrink: 0;
+
+        &:hover {
+            filter: brightness(1.1);
+        }
+        
+        &.is-active {
+            transform: rotate(90deg);
+        }
+    }
+
+    .pm-fab-menu {
+        display: flex;
+        flex-direction: row-reverse;
+        align-items: center;
+        gap: 8px;
+        opacity: 0;
+        visibility: hidden;
+        transform: translateX(20px);
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        background-color: var(--pm-item-bg) !important;
+        padding: 5px 10px;
+        border-radius: 20px;
+        border: 1px solid var(--pm-border) !important;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+        /* 防止菜单内容换行 */
+        white-space: nowrap;
+        /* 确保菜单在悬浮球之上 */
+        z-index: 1001;
+
+        &.is-visible {
+            opacity: 1;
+            visibility: visible;
+            transform: translateX(0);
+        }
+
+        .pm-fab-btn {
+            margin: 0;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1rem;
+            padding: 0;
+            
+            &[id="preset-memo-insert-save-btn"] {
+                width: auto;
+                padding: 0 12px;
+                border-radius: 16px;
+                font-size: 0.9rem;
+                gap: 5px;
+            }
         }
     }
 
@@ -106,19 +197,15 @@
     }
 
     .pm-content-area {
-        flex: 1 1 auto;
-        min-height: 0;
+        flex: 1;
         overflow-y: auto;
-        overflow-x: hidden;
-        -webkit-overflow-scrolling: touch;
         padding: 20px;
         display: flex;
         flex-direction: column;
     }
 
     .pm-tab-content {
-        flex: 1 1 auto;
-        min-height: 0;
+        flex: 1;
     }
 
     .pm-folders-bar {
@@ -177,24 +264,97 @@
         justify-content: space-between;
         align-items: center;
         margin-bottom: 15px;
+        gap: 10px;
+        flex-wrap: wrap;
 
         .pm-hint {
             font-size: 0.85rem;
             opacity: 0.8;
+            flex: 1;
+        }
+
+        .pm-toolbar-actions {
+            display: flex;
+            gap: 8px;
+            align-items: center;
         }
 
         .pm-btn {
             display: flex;
             align-items: center;
+            justify-content: center;
             gap: 5px;
             padding: 5px 10px;
             margin: 0;
+            white-space: nowrap;
+            flex-shrink: 0;
         }
+    }
+
+    /* 全选 / 反选 复选框 */
+    .pm-select-all {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 0.85rem;
+        cursor: pointer;
+        user-select: none;
+        white-space: nowrap;
+
+        input[type="checkbox"] {
+            cursor: pointer;
+            transform: scale(1.1);
+        }
+    }
+
+    /* 搜索框 */
+    .pm-search-box {
+        position: relative;
+        flex: 1;
+        min-width: 160px;
+        display: flex;
+        align-items: center;
+
+        > i.fa-magnifying-glass {
+            position: absolute;
+            left: 10px;
+            opacity: 0.6;
+            pointer-events: none;
+            font-size: 0.85rem;
+        }
+
+        input.text_pole {
+            width: 100%;
+            box-sizing: border-box;
+            padding: 6px 30px 6px 30px;
+            height: 32px;
+            background-color: var(--pm-input-bg) !important;
+            color: var(--pm-input-text) !important;
+            border: 1px solid var(--pm-border) !important;
+            border-radius: 4px;
+        }
+
+        .pm-search-clear {
+            position: absolute;
+            right: 10px;
+            opacity: 0.6;
+            cursor: pointer;
+
+            &:hover {
+                opacity: 1;
+                color: var(--pm-danger) !important;
+            }
+        }
+    }
+
+    /* 顶部操作栏 (同 pm-sticky-footer, 仅间距方向不同) */
+    .pm-sticky-header {
+        margin-top: 0 !important;
+        margin-bottom: 10px !important;
     }
 
     .pm-sticky-footer {
         display: flex;
-        flex-shrink: 0;
         justify-content: space-between;
         align-items: center;
         padding: 12px 15px;
@@ -206,6 +366,7 @@
         .pm-btn-primary {
             display: flex;
             align-items: center;
+            justify-content: center;
             gap: 5px;
             background-color: var(--pm-primary) !important;
             color: var(--pm-primary-text) !important;
@@ -213,6 +374,8 @@
             border-radius: 4px;
             font-weight: bold;
             transition: filter 0.2s;
+            white-space: nowrap;
+            flex-shrink: 0;
 
             &:hover {
                 filter: brightness(1.1);
@@ -223,7 +386,6 @@
     .pm-list {
         display: flex;
         flex-direction: column;
-        min-height: 0;
         gap: 10px;
     }
 
@@ -270,6 +432,22 @@
 
         i {
             color: var(--pm-primary) !important;
+        }
+    }
+
+    #preset-memo-insert-save-btn {
+        &.is-visible {
+            display: flex !important;
+            align-items: center;
+            justify-content: center;
+            background-color: var(--pm-primary) !important;
+            color: var(--pm-primary-text) !important;
+        }
+
+        &.is-disabled {
+            opacity: 0.45;
+            cursor: not-allowed;
+            pointer-events: none;
         }
     }
 
@@ -321,6 +499,7 @@
                 align-items: center;
                 gap: 10px;
                 flex: 1;
+                min-width: 0;
             }
 
             .memo-right {
@@ -330,9 +509,39 @@
             }
         }
 
+        /* 拖拽手柄 */
+        .memo-drag-handle {
+            cursor: grab;
+            opacity: 0.4;
+            transition: opacity 0.2s;
+            padding: 2px 4px;
+            flex-shrink: 0;
+
+            &:hover {
+                opacity: 0.9;
+            }
+
+            &:active {
+                cursor: grabbing;
+            }
+        }
+
+        /* 折叠 / 展开图标 */
+        .memo-toggle {
+            cursor: pointer;
+            opacity: 0.6;
+            transition: transform 0.2s, opacity 0.2s;
+            flex-shrink: 0;
+
+            &:hover {
+                opacity: 1;
+            }
+        }
+
         input[type="text"] {
             flex: 1;
             padding: 4px 8px;
+            min-width: 0;
         }
 
         textarea {
@@ -341,7 +550,48 @@
             resize: vertical;
             padding: 8px;
             box-sizing: border-box;
+            display: none; /* 默认折叠 */
         }
+
+        /* 折叠时显示内容预览 */
+        .memo-preview {
+            font-size: 0.85rem;
+            opacity: 0.7;
+            cursor: pointer;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            padding: 4px 0 0 22px;
+
+            &:hover {
+                opacity: 1;
+                color: var(--pm-primary) !important;
+            }
+        }
+
+        /* 展开后: 切换显隐 + 旋转图标 */
+        &.is-expanded {
+            .memo-toggle {
+                transform: rotate(90deg);
+            }
+
+            .memo-preview {
+                display: none;
+            }
+
+            textarea {
+                display: block;
+            }
+        }
+    }
+
+    /* 拖拽时的占位符 */
+    .memo-entry-placeholder {
+        border: 2px dashed var(--pm-primary) !important;
+        background-color: var(--pm-info-bg) !important;
+        border-radius: 6px;
+        margin: 0;
+        visibility: visible !important;
     }
 
     .wb-entry-item,
@@ -501,6 +751,71 @@
     }
 
     .preset-prompt-item {
+        &.is-draft {
+            border-left-color: var(--pm-primary) !important;
+        }
+
+        .preset-prompt-title {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .draft-badge {
+            font-size: 0.75rem;
+            border-radius: 999px;
+            padding: 1px 8px;
+            border: 1px solid var(--pm-primary) !important;
+            color: var(--pm-primary) !important;
+        }
+    }
+
+    .pm-insert-picker {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        min-height: 240px;
+        max-height: 55vh;
+        overflow: auto;
+        border: 1px solid var(--pm-border) !important;
+        border-radius: 6px;
+        padding: 10px;
+        background-color: var(--pm-item-bg) !important;
+    }
+
+    .pm-insert-picker-folder {
+        border: 1px solid var(--pm-border) !important;
+        border-radius: 6px;
+        padding: 8px;
+        background-color: var(--pm-bg) !important;
+    }
+
+    .pm-insert-picker-folder-head {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 8px;
+        margin-bottom: 6px;
+        font-size: 0.9rem;
+    }
+
+    .pm-insert-picker-folder-items {
+        display: flex;
+        flex-direction: column;
+        gap: 5px;
+        padding-left: 8px;
+    }
+
+    .pm-insert-picker-item {
+        display: flex;
+        align-items: flex-start;
+        gap: 6px;
+        font-size: 0.85rem;
+        opacity: 0.9;
+    }
+
+    .preset-prompt-item {
         background-color: var(--pm-item-bg) !important;
         border-left: 4px solid var(--pm-border) !important;
         padding: 8px 12px;
@@ -518,28 +833,50 @@
     @media screen and (max-width: 768px) {
         #preset-memo-modal {
             padding: 0;
-            display: block !important;
-            /* 取消 flex 居中，使用绝对定位铺满 */
+            display: flex !important;
+            align-items: flex-end; /* 让内容靠底部对齐 */
         }
 
         #preset-memo-modal-content {
-            position: absolute !important;
-            top: 0 !important;
-            left: 0 !important;
+            position: relative !important;
+            top: auto !important;
+            left: auto !important;
             width: 100vw !important;
-            height: 100dvh !important;
-            height: 100vh !important;
-            max-height: 100dvh !important;
-            max-height: 100vh !important;
-            overflow: hidden !important;
-            border-radius: 0 !important;
+            height: 92vh !important; /* 留出顶部 8% 的空间给系统状态栏 */
+            max-height: 92vh !important;
+            border-radius: 20px 20px 0 0 !important; /* 顶部大圆角，原生 App 质感 */
             border: none !important;
             background-color: var(--pm-bg) !important;
             z-index: 10;
+            padding-top: 0 !important;
+            padding-bottom: env(safe-area-inset-bottom, 0px) !important; /* 适配 iPhone 底部的小黑条 */
+            box-sizing: border-box !important;
+            box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.3); /* 顶部边缘加一点阴影 */
+            /* 确保内容不会溢出 */
+            overflow: hidden;
+        }
+
+        /* 移动端悬浮球默认位置调整，避免挡住内容 */
+        .pm-fab-container {
+            top: auto;
+            bottom: 20px;
+            right: 20px;
+            /* 移动端悬浮球需要 fixed 定位，否则会被 overflow: hidden 截断 */
+            position: fixed !important;
+            /* 确保悬浮球在最顶层 */
+            z-index: 2147483647 !important;
+        }
+
+        .pm-fab-menu {
+            flex-direction: column-reverse; /* 移动端菜单改为向上展开 */
+            transform: translateY(20px);
+            
+            &.is-visible {
+                transform: translateY(0);
+            }
         }
 
         .pm-tabs {
-            flex: 0 0 auto;
             flex-wrap: nowrap;
             overflow-x: auto;
             -webkit-overflow-scrolling: touch;
@@ -564,102 +901,559 @@
 
         .pm-content-area {
             padding: 10px;
-            flex: 1 1 auto;
-            min-height: 0;
-            overflow-y: auto !important;
-            overflow-x: hidden;
             -webkit-overflow-scrolling: touch;
-            padding-bottom: calc(14px + env(safe-area-inset-bottom));
+            overscroll-behavior: contain;
         }
 
-        .pm-tab-content {
-            min-height: 0;
+        /* 移动端不允许用户手动拉伸 textarea, 防止误操作把高度拉到一屏外 */
+        .memo-entry-item textarea {
+            resize: none !important;
         }
 
-        .pm-wb-list,
-        .pm-insert-list {
+        /* 快捷按钮在小屏排得紧一点 */
+        .memo-shortcut-btn {
+            padding: 3px 7px;
+            font-size: 0.75rem;
+        }
+
+        .pm-toolbar {
+            flex-direction: column;
+            align-items: flex-start !important;
+
+            .pm-toolbar-actions {
+                width: 100%;
+                flex-wrap: wrap;
+
+                select {
+                    flex: 1;
+                    min-width: 120px;
+                }
+            }
+
+            .pm-search-box {
+                width: 100%;
+            }
+        }
+    }
+
+    /* 面板内自定义弹窗 (替代浏览器 prompt / confirm) */
+    .pm-popup-overlay {
+        position: absolute;
+        inset: 0;
+        background-color: rgba(0, 0, 0, 0.55);
+        backdrop-filter: blur(2px);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 2147483647;
+        border-radius: inherit;
+
+        &.pm-light-mode .pm-popup {
+            --pm-bg: #f5f5f5;
+            --pm-text: #333333;
+            --pm-border: #cccccc;
+            --pm-item-bg: #ffffff;
+            --pm-input-bg: #ffffff;
+            --pm-input-text: #333333;
+        }
+    }
+
+    .pm-popup {
+        --pm-bg: #1a1a1a;
+        --pm-text: #eeeeee;
+        --pm-border: #444444;
+        --pm-item-bg: rgba(0, 0, 0, 0.5);
+        --pm-input-bg: rgba(0, 0, 0, 0.5);
+        --pm-input-text: #eeeeee;
+        --pm-primary: #0066cc;
+        --pm-primary-text: #ffffff;
+        --pm-danger: #ff3b3b;
+
+        background-color: var(--pm-bg) !important;
+        color: var(--pm-text) !important;
+        border: 1px solid var(--pm-border) !important;
+        border-radius: 8px;
+        padding: 20px;
+        min-width: 320px;
+        max-width: 90%;
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+        display: flex;
+        flex-direction: column;
+        gap: 14px;
+
+        /* 加大尺寸 (用于宏管理 / 预览) */
+        &.pm-popup-large {
+            width: 720px;
+            max-width: 92%;
+            max-height: 80vh;
+            overflow: hidden;
+        }
+
+        .pm-popup-message {
+            font-size: 0.95rem;
+            white-space: pre-wrap;
+            line-height: 1.5;
+        }
+
+        .pm-popup-subtitle {
+            margin-top: 6px;
+            font-size: 0.8rem;
+            opacity: 0.7;
+            font-weight: normal;
+        }
+
+        .pm-popup-input {
+            width: 100%;
+            box-sizing: border-box;
+            padding: 8px 10px;
+            background-color: var(--pm-input-bg) !important;
+            color: var(--pm-input-text) !important;
+            border: 1px solid var(--pm-border) !important;
+            border-radius: 4px;
+
+            &:focus {
+                outline: none;
+                border-color: var(--pm-primary) !important;
+            }
+        }
+
+        .pm-popup-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+            flex-wrap: wrap;
+
+            .pm-popup-cancel,
+            .pm-popup-confirm,
+            .pm-popup-danger {
+                padding: 6px 18px;
+                border-radius: 4px;
+                cursor: pointer;
+                font-size: 0.9rem;
+            }
+
+            .pm-popup-confirm {
+                background-color: var(--pm-primary) !important;
+                color: var(--pm-primary-text) !important;
+                font-weight: bold;
+
+                &:hover {
+                    filter: brightness(1.1);
+                }
+            }
+
+            .pm-popup-danger {
+                background-color: var(--pm-danger) !important;
+                color: #fff !important;
+                font-weight: bold;
+
+                &:hover {
+                    filter: brightness(1.1);
+                }
+            }
+        }
+    }
+
+    /* 备忘录条目内的"快捷插入"按钮条 (展开时显示) */
+    .memo-shortcuts {
+        display: none;
+        flex-wrap: wrap;
+        gap: 6px;
+        padding: 4px 0;
+    }
+
+    .memo-entry-item.is-expanded .memo-shortcuts {
+        display: flex;
+    }
+
+    .memo-shortcut-btn {
+        margin: 0;
+        padding: 3px 9px;
+        border-radius: 4px;
+        font-size: 0.8rem;
+        font-family: monospace;
+        cursor: pointer;
+        background-color: var(--pm-input-bg) !important;
+        border: 1px solid var(--pm-border) !important;
+        color: var(--pm-text) !important;
+        white-space: nowrap;
+        transition: all 0.15s;
+
+        &:hover {
+            background-color: var(--pm-primary) !important;
+            color: var(--pm-primary-text) !important;
+            border-color: var(--pm-primary) !important;
+        }
+    }
+
+    .memo-shortcuts-empty {
+        font-size: 0.8rem;
+        opacity: 0.5;
+        font-style: italic;
+    }
+
+    /* 快捷插入管理弹窗 */
+    .pm-shortcuts-list {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        max-height: 50vh;
+        overflow-y: auto;
+        padding: 4px;
+    }
+
+    .pm-macros-actions {
+        display: flex;
+        gap: 10px;
+        justify-content: flex-start;
+
+        .pm-btn {
+            margin: 0;
+            padding: 5px 12px;
+        }
+    }
+
+    .pm-shortcut-row {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 4px;
+        border-radius: 4px;
+        background-color: var(--pm-item-bg) !important;
+        border: 1px solid var(--pm-border) !important;
+
+        .pm-shortcut-handle {
+            cursor: grab;
+            opacity: 0.4;
+            padding: 2px 4px;
+            flex-shrink: 0;
+
+            &:hover {
+                opacity: 0.9;
+            }
+
+            &:active {
+                cursor: grabbing;
+            }
+        }
+
+        .pm-macro-arrow {
+            opacity: 0.6;
+            flex-shrink: 0;
+        }
+
+        .pm-shortcut-label,
+        .pm-shortcut-insert {
+            flex: 1;
+            min-width: 0;
+            padding: 5px 8px;
+            background-color: var(--pm-input-bg) !important;
+            color: var(--pm-input-text) !important;
+            border: 1px solid var(--pm-border) !important;
+            border-radius: 4px;
+            font-family: monospace;
+
+            &:focus {
+                outline: none;
+                border-color: var(--pm-primary) !important;
+            }
+        }
+
+        .pm-shortcut-label {
+            max-width: 160px;
+        }
+
+        .pm-shortcut-del {
+            margin: 0;
+            padding: 4px 6px;
+            flex-shrink: 0;
+        }
+    }
+
+    .pm-shortcut-placeholder {
+        height: 36px;
+        border: 2px dashed var(--pm-primary) !important;
+        background-color: var(--pm-info-bg) !important;
+        border-radius: 4px;
+        visibility: visible !important;
+    }
+
+    /* 宏预览弹窗 */
+    .pm-preview-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 12px;
+        min-height: 200px;
+        max-height: 55vh;
+        overflow: hidden;
+    }
+
+    .pm-preview-pane {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+        min-height: 0;
+
+        .pm-preview-label {
+            font-size: 0.8rem;
+            opacity: 0.7;
+            font-weight: bold;
+        }
+
+        pre {
+            flex: 1;
+            margin: 0;
+            padding: 10px;
+            border-radius: 6px;
+            background-color: var(--pm-input-bg) !important;
+            border: 1px solid var(--pm-border) !important;
+            overflow: auto;
+            white-space: pre-wrap;
+            word-break: break-word;
+            font-family: monospace;
+            font-size: 0.85rem;
+            line-height: 1.5;
+        }
+    }
+
+    /* 文件夹: 置顶图标 + 拖拽占位 */
+    .pm-folder-tab {
+        .folder-pin {
+            opacity: 0;
+            transition: opacity 0.2s, color 0.2s;
+            cursor: pointer;
+            padding: 0 2px;
+            font-size: 0.75rem;
+
+            &.is-pinned {
+                opacity: 1;
+                color: var(--pm-primary) !important;
+            }
+        }
+
+        &:hover .folder-pin {
+            opacity: 0.6;
+
+            &:hover {
+                opacity: 1;
+                color: var(--pm-primary) !important;
+            }
+        }
+
+        &.is-pinned .folder-icon {
+            color: var(--pm-primary) !important;
+        }
+    }
+
+    .pm-folder-placeholder {
+        display: inline-block;
+        min-width: 80px;
+        height: 32px;
+        border: 2px dashed var(--pm-primary) !important;
+        background-color: var(--pm-info-bg) !important;
+        border-radius: 6px;
+        margin: 2px;
+        visibility: visible !important;
+    }
+
+    /* 移动端: 宏管理 / 预览弹窗自适应 */
+    @media screen and (max-width: 768px) {
+        /* 关键: 用 position: fixed + svh, 跟随移动端真实的可见区域 (visual viewport),
+           解决之前用 absolute + 100vh 导致弹窗跑到地址栏后面看不到的问题 */
+        .pm-popup-overlay {
+            position: fixed !important;
+            inset: 0 !important;
+            top: 0 !important;
+            left: 0 !important;
+            right: 0 !important;
+            bottom: 0 !important;
+            width: 100vw !important;
+            height: 100vh !important;
+            height: 100svh !important;
+            max-height: 100svh !important;
+            padding: 12px;
+            box-sizing: border-box;
+        }
+
+        /* 普通 confirm / prompt 弹窗: 宽度撑满 overlay 内容区, 高度自适应 + 内容多时可滚动 */
+        .pm-popup {
+            width: 100%;
+            max-width: 100%;
+            min-width: 0 !important;
+            padding: 16px !important;
+            box-sizing: border-box;
+            max-height: calc(100vh - 24px);
+            max-height: calc(100svh - 24px);
+            overflow-y: auto;
+        }
+
+        /* large 弹窗 (快捷键管理 / 宏预览): 纵向也撑满, 内部独立滚动 */
+        .pm-popup.pm-popup-large {
+            width: 100% !important;
+            max-width: 100% !important;
+            height: 100% !important;
+            max-height: 100% !important;
+            overflow: hidden !important;
+            gap: 10px !important;
+            padding: 12px !important;
+        }
+
+        .pm-popup.pm-popup-large .pm-shortcuts-list,
+        .pm-popup.pm-popup-large .pm-macros-list {
+            flex: 1 1 0 !important;
+            min-height: 0 !important;
+            max-height: none !important;
+        }
+
+        .pm-preview-grid {
+            grid-template-columns: 1fr;
+            flex: 1 1 0;
             min-height: 0;
             max-height: none;
         }
 
-        .pm-sticky-footer {
-            flex-shrink: 0;
+        .pm-macro-row,
+        .pm-shortcut-row {
+            flex-wrap: wrap;
+        }
+
+        .pm-macro-row .pm-macro-key,
+        .pm-shortcut-row .pm-shortcut-label {
+            max-width: none;
+        }
+
+        /* actions 区允许换行, 按钮不挤到角落 */
+        .pm-popup .pm-popup-actions {
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        /* 普通弹窗的按钮在移动端单独占一行更好按 */
+        .pm-popup:not(.pm-popup-large) .pm-popup-actions {
+            justify-content: flex-end;
+            gap: 8px;
+        }
+
+        .pm-popup:not(.pm-popup-large) .pm-popup-actions > div {
+            padding: 8px 20px !important;
+            font-size: 0.95rem !important;
         }
     }
-}
 
-/* Mobile action bar fix: keep import/export controls near the top and visible */
-@media screen and (max-width: 768px) {
-  #preset-memo-modal {
-    padding: 0 !important;
-    align-items: stretch !important;
-    justify-content: flex-start !important;
-    overflow: hidden !important;
-    height: 100dvh !important;
-    max-height: 100dvh !important;
-  }
+    /* --- 悬浮球样式 (FAB) --- */
+    .pm-fab-container {
+        position: absolute;
+        right: 20px;
+        bottom: 20px;
+        z-index: 2147483647;
+        display: flex;
+        flex-direction: column-reverse;
+        align-items: flex-end;
+        gap: 15px;
+        
+        &.is-dragging {
+            opacity: 0.8;
+            .pm-fab-menu {
+                display: none !important;
+            }
+        }
+    }
 
-  #preset-memo-modal #preset-memo-modal-content {
-    position: fixed !important;
-    inset: 0 !important;
-    width: 100vw !important;
-    height: 100dvh !important;
-    max-height: 100dvh !important;
-    border-radius: 0 !important;
-    border: none !important;
-    display: flex !important;
-    flex-direction: column !important;
-    overflow: hidden !important;
-  }
+    .pm-fab-toggle {
+        display: flex;
+        width: 48px;
+        height: 48px;
+        border-radius: 50%;
+        background-color: var(--pm-primary) !important;
+        color: var(--pm-primary-text) !important;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+        cursor: grab;
+        transition: transform 0.2s;
+        
+        &:active {
+            cursor: grabbing;
+        }
+        
+        &.is-open {
+            transform: rotate(45deg);
+        }
+    }
 
-  #preset-memo-modal .pm-header,
-  #preset-memo-modal .pm-tabs {
-    flex: 0 0 auto !important;
-  }
+    .pm-fab-menu {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        background-color: var(--pm-bg) !important;
+        padding: 10px;
+        border-radius: 24px;
+        border: 1px solid var(--pm-border) !important;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+        
+        opacity: 0;
+        pointer-events: none;
+        transform: translateY(20px) scale(0.8);
+        transform-origin: bottom right;
+        transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        
+        &.is-open {
+            opacity: 1;
+            pointer-events: auto;
+            transform: translateY(0) scale(1);
+        }
 
-  #preset-memo-modal .pm-content-area {
-    flex: 1 1 auto !important;
-    min-height: 0 !important;
-    overflow-y: auto !important;
-    overflow-x: hidden !important;
-    -webkit-overflow-scrolling: touch !important;
-    padding-bottom: calc(14px + env(safe-area-inset-bottom)) !important;
-  }
+        .pm-fab-btn {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0;
+            padding: 0;
+        }
+        
+        #preset-memo-insert-save-btn {
+            width: auto;
+            border-radius: 18px;
+            padding: 0 12px;
+            .pm-fab-text { display: none; }
+        }
+    }
 
-  #preset-memo-modal .pm-tab-content {
-    min-height: 0 !important;
-  }
-
-  #preset-memo-modal .pm-wb-list,
-  #preset-memo-modal .pm-insert-list {
-    flex: 1 1 auto !important;
-    min-height: 180px !important;
-    max-height: none !important;
-    overflow-y: auto !important;
-    -webkit-overflow-scrolling: touch !important;
-  }
-
-  #preset-memo-modal .pm-sticky-footer {
-    flex: 0 0 auto !important;
-    position: sticky !important;
-    top: 0 !important;
-    z-index: 20 !important;
-    margin-top: 0 !important;
-    margin-bottom: 10px !important;
-    background-color: var(--pm-bg) !important;
-    box-shadow: 0 4px 10px rgba(0,0,0,.25);
-  }
-
-  #preset-memo-modal .pm-sticky-footer > div {
-    flex-wrap: wrap;
-  }
-
-  #preset-memo-modal .pm-sticky-footer label {
-    font-size: 0.85rem;
-  }
-
-  #preset-memo-modal .pm-sticky-footer select,
-  #preset-memo-modal .pm-sticky-footer .pm-searchable-select {
-    min-width: 0 !important;
-  }
+    /* 桌面端隐藏悬浮球，恢复原样 */
+    @media screen and (min-width: 769px) {
+        .pm-fab-container {
+            position: static;
+            flex-direction: row;
+            align-items: center;
+            gap: 10px;
+        }
+        .pm-fab-toggle {
+            display: none;
+        }
+        .pm-fab-menu {
+            opacity: 1;
+            pointer-events: auto;
+            transform: none;
+            flex-direction: row;
+            background: none !important;
+            border: none !important;
+            box-shadow: none;
+            padding: 0;
+            
+            .pm-fab-btn {
+                width: auto;
+                height: auto;
+                border-radius: 4px;
+                padding: 6px 10px;
+            }
+            #preset-memo-insert-save-btn .pm-fab-text {
+                display: inline;
+                margin-left: 5px;
+            }
+        }
+    }
 }
