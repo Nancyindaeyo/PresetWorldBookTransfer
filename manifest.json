@@ -1,0 +1,11 @@
+{
+  "display_name": "预设备忘录 · 世界书转预设",
+  "loading_order": 100,
+  "requires": [],
+  "optional": [],
+  "js": "bootstrap.js",
+  "author": "Nancyindaeyo",
+  "version": "6.4.1",
+  "homePage": "https://github.com/Nancyindaeyo/PresetWorldBookTransfer",
+  "auto_update": true
+}
