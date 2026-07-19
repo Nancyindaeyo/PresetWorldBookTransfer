@@ -1,21 +1,31 @@
 const EXT_FOLDER = 'PresetWorldBookTransfer';
 const SCRIPT_NAME = '预设备忘录';
+const SCRIPT_ID = 'preset-worldbook-transfer';
+const MAX_ATTEMPTS = 60;
+const RETRY_MS = 500;
 
-jQuery(() => {
-  if (typeof isInstalledExtension !== 'function' || typeof getTavernHelperExtensionId !== 'function') {
-    console.warn('[预设备忘录] 当前环境不支持扩展检测，请确认已安装酒馆助手');
-    return;
-  }
+/** @returns {Record<string, Function> | null} */
+function getTavernHelper() {
+  const th = window.TavernHelper;
+  if (!th || typeof th !== 'object') return null;
+  return th;
+}
 
-  if (!isInstalledExtension(getTavernHelperExtensionId())) {
-    toastr.warning('请先安装酒馆助手 (JS-Slash-Runner)，再启用本扩展。', SCRIPT_NAME);
-    return;
-  }
+function getThFn(name) {
+  const th = getTavernHelper();
+  if (th && typeof th[name] === 'function') return th[name].bind(th);
+  const globalFn = window[name];
+  if (typeof globalFn === 'function') return globalFn;
+  return null;
+}
 
-  if (typeof updateScriptTreesWith !== 'function') {
-    toastr.error('未找到酒馆助手脚本接口，请更新酒馆助手后重试。', SCRIPT_NAME);
-    return;
-  }
+function isTavernHelperReady() {
+  return typeof getThFn('updateScriptTreesWith') === 'function';
+}
+
+function registerPresetMemoScript() {
+  const updateScriptTreesWith = getThFn('updateScriptTreesWith');
+  if (!updateScriptTreesWith) return false;
 
   const scriptContent = `import '/scripts/extensions/third-party/${EXT_FOLDER}/index.js'`;
 
@@ -38,6 +48,7 @@ jQuery(() => {
       {
         type: 'script',
         enabled: true,
+        id: SCRIPT_ID,
         name: SCRIPT_NAME,
         content: scriptContent,
         info: '世界书与预设互转、备忘录、变量检查等工具。',
@@ -49,4 +60,27 @@ jQuery(() => {
   }, { type: 'global' });
 
   console.info('[预设备忘录] 已在酒馆助手中注册脚本');
+  toastr.success('已在酒馆助手中注册脚本，若未出现入口请刷新页面', SCRIPT_NAME);
+  return true;
+}
+
+function waitForTavernHelper(attempt = 0) {
+  if (isTavernHelperReady()) {
+    registerPresetMemoScript();
+    return;
+  }
+
+  if (attempt >= MAX_ATTEMPTS) {
+    toastr.warning(
+      '未检测到酒馆助手接口。请确认已安装并启用「酒馆助手」，然后刷新页面。',
+      SCRIPT_NAME,
+    );
+    return;
+  }
+
+  setTimeout(() => waitForTavernHelper(attempt + 1), RETRY_MS);
+}
+
+jQuery(() => {
+  waitForTavernHelper();
 });
