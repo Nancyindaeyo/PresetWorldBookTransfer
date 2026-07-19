@@ -10,7 +10,13 @@
       {
         "title": "更新日志",
         "items": ["更新说明改为从扩展目录的 `changelog.json` 读取，git 更新后无需等新 bundle 也能看到新版本说明"]
-      },
+      }
+    ]
+  },
+  {
+    "version": "6.5.4",
+    "title": "修复",
+    "sections": [
       {
         "title": "插入到当前预设",
         "items": ["修复扩展直载模式下保存新预设条目时报错 `builtin is not defined`"]
