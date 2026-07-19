@@ -32,6 +32,8 @@ import 'https://cdn.jsdelivr.net/gh/Nancyindaeyo/PresetWorldBookTransfer@main/in
 - 预设管理器底部工具栏：书签图标
 - 扩展菜单：**预设备忘录**
 
+主题面板中可选择 **「酒馆」** 样式，跟随酒馆 SmartTheme 美化自动同步配色。
+
 ## 仓库结构
 
 | 文件 | 说明 |
@@ -47,7 +49,9 @@ import 'https://cdn.jsdelivr.net/gh/Nancyindaeyo/PresetWorldBookTransfer@main/in
 
 1. 点击打开**扩展版本**的预设备忘录（预设管理器书签图标或扩展菜单）
 2. 会弹出确认框，询问是否将旧脚本数据合并到当前版本
-3. 确认后自动合并备忘/文件夹/主题等，关闭重复脚本，并**刷新酒馆页面**
+3. 确认后自动合并备忘/文件夹/主题等，**关闭所有旧版脚本**（含「预设世界书互转备忘录 …」等不同名称），并**刷新酒馆页面**
+
+刷新后若仍有旧脚本处于启用状态，扩展会自动再次关闭（无需重复迁移确认）。
 
 取消则暂不迁移，可继续使用当前面板（但重复脚本仍会并存）。
 
@@ -64,4 +68,6 @@ import 'https://cdn.jsdelivr.net/gh/Nancyindaeyo/PresetWorldBookTransfer@main/in
 
 ## 更新
 
-扩展管理器中点击「更新」，或重新执行上述安装步骤。
+界面标题旁会显示当前版本；若 GitHub 上有更高版本，会出现 **「新版本 vX.X.X」** 提示（需联网检测）。
+
+扩展管理器中点击「更新」，或重新执行上述安装步骤。发版时请同步修改 `manifest.json` 与源码中的 `PM_DISPLAY_VERSION`。
