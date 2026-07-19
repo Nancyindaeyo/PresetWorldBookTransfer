@@ -7,5 +7,10 @@
   "author": "Nancyindaeyo",
   "version": "6.4.1",
   "homePage": "https://github.com/Nancyindaeyo/PresetWorldBookTransfer",
-  "auto_update": true
+  "auto_update": true,
+  "hooks": {
+    "delete": "onDelete",
+    "disable": "onDisable",
+    "enable": "onEnable"
+  }
 }
