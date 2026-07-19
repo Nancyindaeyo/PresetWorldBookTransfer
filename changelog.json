@@ -7,10 +7,6 @@
         "title": "CoT 预览",
         "items": ["修复扩展直载模式下 CoT 预览报错 `builtin is not defined`（无法 dry-run 时自动回退静态预览）"]
       },
-      {
-        "title": "插入到当前预设",
-        "items": ["修复扩展直载模式下保存新预设条目时报错 `builtin is not defined`"]
-      }
     ]
   },
   {
