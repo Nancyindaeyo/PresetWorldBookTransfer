@@ -3,8 +3,33 @@ const SCRIPT_NAME = '预设备忘录';
 const SCRIPT_ID = 'preset-worldbook-transfer';
 const EXT_SCRIPT_IMPORT = `/scripts/extensions/third-party/${EXT_FOLDER}/index.js`;
 const PM_SINGLETON_KEY = '__presetMemoSingletonCleanup';
+const REGISTER_TOAST_KEY = 'PresetWorldBookTransfer:register-toast-shown';
 const MAX_ATTEMPTS = 60;
 const RETRY_MS = 500;
+
+function hasShownRegisterToast() {
+  try {
+    return localStorage.getItem(REGISTER_TOAST_KEY) === '1';
+  } catch {
+    return false;
+  }
+}
+
+function markRegisterToastShown() {
+  try {
+    localStorage.setItem(REGISTER_TOAST_KEY, '1');
+  } catch {
+    /* ignore */
+  }
+}
+
+function clearRegisterToastShown() {
+  try {
+    localStorage.removeItem(REGISTER_TOAST_KEY);
+  } catch {
+    /* ignore */
+  }
+}
 
 /** @returns {Record<string, Function> | null} */
 function getTavernHelper() {
@@ -116,6 +141,7 @@ function registerPresetMemoScript(options = {}) {
   if (!updateScriptTreesWith) return false;
 
   const scriptContent = `import '${EXT_SCRIPT_IMPORT}'`;
+  let created = false;
 
   updateScriptTreesWith(trees => {
     let found = false;
@@ -134,6 +160,7 @@ function registerPresetMemoScript(options = {}) {
 
     if (found) return next;
 
+    created = true;
     return [
       ...next,
       {
@@ -150,9 +177,11 @@ function registerPresetMemoScript(options = {}) {
     ];
   }, { type: 'global' });
 
-  if (!quiet) {
+  const shouldNotify = !quiet && !hasShownRegisterToast() && created;
+  if (shouldNotify) {
     console.info('[预设备忘录] 已在酒馆助手中注册脚本');
     toastr.success('已在酒馆助手中注册脚本，若未出现入口请刷新页面', SCRIPT_NAME);
+    markRegisterToastShown();
   }
   return true;
 }
@@ -177,6 +206,7 @@ function waitForTavernHelper(attempt = 0) {
 export async function onDelete() {
   unregisterPresetMemoScript();
   cleanupExtensionDom();
+  clearRegisterToastShown();
 }
 
 export async function onDisable() {
