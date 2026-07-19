@@ -6,7 +6,7 @@
         <div class="pm-version-row">
           <span class="pm-version-badge" aria-hidden="true">v{{ PM_DISPLAY_VERSION }}</span>
           <button
-            v-if="hasUpdate"
+            v-if="updateStatus === 'available'"
             type="button"
             class="pm-version-update interactable"
             :class="{ 'is-busy': updatingExtension }"
@@ -17,6 +17,14 @@
             <i class="fa-solid fa-circle-up" aria-hidden="true"></i>
             {{ updatingExtension ? '更新中…' : '有更新' }}
           </button>
+          <span
+            v-else-if="updateStatus === 'latest'"
+            class="pm-version-latest"
+            title="扩展已与 GitHub 远程同步"
+          >
+            <i class="fa-solid fa-check" aria-hidden="true"></i>
+            已是最新
+          </span>
         </div>
       </div>
       <div id="pm-fab-container" class="pm-header-toolbar">
@@ -154,7 +162,7 @@ function onPanelOpen() {
   scheduleUpdateChecks();
 }
 
-const hasUpdate = ref(false);
+const updateStatus = ref<'idle' | 'checking' | 'latest' | 'available' | 'unknown'>('idle');
 const updatingExtension = ref(false);
 
 const UPDATE_CHECK_MAX_ATTEMPTS = 4;
@@ -170,12 +178,14 @@ function clearUpdateCheckSchedule() {
 }
 
 async function runUpdateCheckWithBackoff() {
+  updateStatus.value = 'checking';
   const result = await checkPresetMemoUpdate();
   if (result.ok) {
-    hasUpdate.value = result.hasUpdate;
+    updateStatus.value = result.hasUpdate ? 'available' : 'latest';
     updateCheckAttempt = 0;
     return;
   }
+  updateStatus.value = 'unknown';
   if (updateCheckAttempt >= UPDATE_CHECK_MAX_ATTEMPTS) return;
   const delay = UPDATE_CHECK_BASE_MS * 2 ** updateCheckAttempt;
   updateCheckAttempt += 1;
@@ -202,7 +212,6 @@ async function onApplyUpdate() {
       updatingExtension.value = false;
       return;
     }
-    hasUpdate.value = false;
   } catch (e) {
     console.error(e);
     toastr.error('扩展更新失败，请查看控制台');
