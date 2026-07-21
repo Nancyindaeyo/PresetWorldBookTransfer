@@ -6,68 +6,40 @@
 
 ### 前提
 
-请先安装 [酒馆助手 (JS-Slash-Runner)](https://github.com/n0vi028/JS-Slash-Runner)。
-升级到4.8.19+
+请先安装 [酒馆助手 (JS-Slash-Runner)](https://github.com/n0vi028/JS-Slash-Runner)，版本 **4.8.19+**。
 
-### 方式一：扩展管理器安装（推荐）
+### 扩展管理器安装（推荐）
 
-1. 打开 SillyTavern → **扩展** → **Install Extension**
-2. 粘贴仓库地址：`https://github.com/Nancyindaeyo/PresetWorldBookTransfer`
-3. 选择「只给我安装」或「给所有人安装」
-4. **刷新页面**
-5. 在扩展列表中启用 **预设备忘录**
+1. SillyTavern → **扩展** → **Install Extension**
+2. 粘贴：`https://github.com/Nancyindaeyo/PresetWorldBookTransfer`
+3. 刷新页面 → 启用 **预设备忘录**
 
-扩展会自动在酒馆助手中注册脚本「预设备忘录」。
-
-### 方式二：酒馆助手手动加载
-
-在 **酒馆助手 → 脚本** 中新建脚本，内容：
-
-```javascript
-import 'https://cdn.jsdelivr.net/gh/Nancyindaeyo/PresetWorldBookTransfer@main/index.js'
-```
+扩展由 **bootstrap 直载** `index.js`，**不会**在酒馆助手脚本树中注册「预设备忘录」条目（直载失败时会临时回退为脚本注册）。
 
 ## 使用
 
-- 预设管理器底部工具栏：书签图标
+- 预设管理器底部：书签图标
 - 扩展菜单：**预设备忘录**
 
-主题面板中可选择 **「酒馆」** 样式，跟随酒馆 SmartTheme 美化自动同步配色。
-
-## 仓库结构
+## 本仓库文件说明
 
 | 文件 | 说明 |
 | --- | --- |
 | `manifest.json` | SillyTavern 扩展清单 |
-| `bootstrap.js` | 扩展入口，自动注册酒馆助手脚本 |
-| `index.js` | 打包后的可运行脚本 |
-| `世界书转预设/` | 源码（TypeScript / Vue），仅供维护参考 |
+| `bootstrap.js` | 扩展入口、生命周期 hooks |
+| `index.js` | 打包后的功能 bundle |
+| `README.md` | 本文件 |
 
-## 重复脚本迁移
-
-若你之前**手动添加**过预设备忘录脚本，后来又通过扩展安装了新版本，两个脚本同时启用时：
-
-1. 点击打开**扩展版本**的预设备忘录（预设管理器书签图标或扩展菜单）
-2. 会弹出确认框，询问是否将旧脚本数据合并到当前版本
-3. 确认后自动合并备忘/文件夹/主题等，**关闭所有旧版脚本**（含「预设世界书互转备忘录 …」等不同名称），并**刷新酒馆页面**
-
-刷新后若仍有旧脚本处于启用状态，扩展会自动再次关闭（无需重复迁移确认）。
-
-取消则暂不迁移，可继续使用当前面板（但重复脚本仍会并存）。
-
-合并完成后，可手动删除已禁用的旧脚本条目（可选）。
+源码与维护文档在 monorepo 的 `src/预设备忘录-ext/`、`docs/preset-memo/`，**不会**被 ST 执行。
 
 ## 卸载
 
-在 SillyTavern **扩展** 列表中删除「预设备忘录」时，会自动：
-
-- 从酒馆助手全局脚本中移除扩展注册的「预设备忘录」条目
-- 清理界面入口与面板 DOM
-
-若删除后仍看到旧脚本，请在 **酒馆助手 → 脚本** 中手动删除名称仍为「预设备忘录」的残留条目（可能是你以前手动添加的旧版）。
+在扩展列表删除「预设备忘录」→ 自动移除脚本树条目并清理 DOM。
 
 ## 更新
 
-界面标题旁会显示当前版本；若 GitHub 上有更高版本，会出现 **「新版本 vX.X.X」** 提示（需联网检测）。
+面板内可检测 GitHub 更新；也可在扩展列表手动更新。发版前维护者需 `pnpm build:preset-memo` 并提交本目录的 `index.js`。
 
-扩展管理器中点击「更新」，或重新执行上述安装步骤。发版时请同步修改 `manifest.json` 与源码中的 `PM_DISPLAY_VERSION`。
+## 维护
+
+开发者文档见 monorepo **`docs/preset-memo/`**（迁移计划、架构、验收清单）。
