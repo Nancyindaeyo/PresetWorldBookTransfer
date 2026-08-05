@@ -103,6 +103,11 @@ function installThGlobalsOnWindow() {
     installed += 1;
   }
 
+  if (!w.builtin && th.builtin && typeof th.builtin === 'object') {
+    w.builtin = th.builtin;
+    installed += 1;
+  }
+
   const findSt = () => {
     for (const win of [w, w.parent, w.top].filter(Boolean)) {
       try {
