@@ -5,7 +5,7 @@
   "optional": [],
   "js": "bootstrap.js",
   "author": "Nancyindaeyo",
-  "version": "6.7.4",
+  "version": "6.7.5",
   "homePage": "https://github.com/Nancyindaeyo/PresetWorldBookTransfer",
   "auto_update": true,
   "hooks": {
