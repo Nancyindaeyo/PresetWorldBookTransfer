@@ -7,7 +7,8 @@
         "title": "修复",
         "items": [
           "安卓 WebView 点开插件空白：对齐世界书工作台，用 visualViewport 的像素宽高钉住面板，不再靠 height:100% / fill-available（部分机型会算成 0）",
-          "visualViewport 高度为 0 时回退 innerHeight，再保底 320px，避免点了像没反应"
+          "visualViewport 高度为 0 时回退 innerHeight，再保底 320px，避免点了像没反应",
+          "条目/正则对照点「确定」后再回概览：刚写回的那条若已不在当前筛选，停在相邻位置，不再跳到列表顶端"
         ]
       }
     ]
