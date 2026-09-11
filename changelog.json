@@ -1,5 +1,18 @@
 [
   {
+    "version": "6.7.14",
+    "title": "修复安卓点开空白",
+    "sections": [
+      {
+        "title": "修复",
+        "items": [
+          "安卓 WebView 点开插件空白：对齐世界书工作台，用 visualViewport 的像素宽高钉住面板，不再靠 height:100% / fill-available（部分机型会算成 0）",
+          "visualViewport 高度为 0 时回退 innerHeight，再保底 320px，避免点了像没反应"
+        ]
+      }
+    ]
+  },
+  {
     "version": "6.7.13",
     "title": "手机细对比改回整篇对照",
     "sections": [
