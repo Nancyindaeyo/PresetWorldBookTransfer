@@ -371,6 +371,7 @@ function waitForTavernHelper(attempt = 0) {
 }
 
 export async function onDelete() {
+  // 卸载只撤脚本入口和 DOM，不删除 extension 变量 / global 备份；重装后数据还在。
   extensionInitTask = null;
   unregisterPresetMemoScript();
   cleanupExtensionDom();
