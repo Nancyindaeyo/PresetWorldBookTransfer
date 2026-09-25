@@ -299,7 +299,9 @@ function registerPresetMemoScript(options = {}) {
   return true;
 }
 
-async function loadAndInitExtensionMode() {
+let extensionInitTask = null;
+
+async function loadAndInitExtensionModeOnce() {
   try {
     installThGlobalsOnWindow();
     const mod = await import(`./index.js`);
@@ -310,17 +312,40 @@ async function loadAndInitExtensionMode() {
       console.error('[预设备忘录] index.js 缺少 initPresetMemo，回退脚本注册');
       console.info('[预设备忘录] runtime=fallback-register');
       registerPresetMemoScript({ quiet: true });
-      return;
+      return { ok: false, reason: 'init-failed' };
     }
-    mod.initPresetMemo({ mode: 'extension', extensionId: EXT_FOLDER });
-    if (PM_DIRECT_LOAD) {
-      unregisterPresetMemoScript();
+    const result = await Promise.resolve(mod.initPresetMemo({ mode: 'extension', extensionId: EXT_FOLDER }));
+    if (result && result.ok) {
+      if (PM_DIRECT_LOAD) {
+        unregisterPresetMemoScript();
+      }
+      return result;
     }
+    console.error('[预设备忘录] 直载未成功，回退脚本注册', result);
+    console.info('[预设备忘录] runtime=fallback-register');
+    registerPresetMemoScript({ quiet: true });
+    return result || { ok: false, reason: 'init-failed' };
   } catch (e) {
     console.error('[预设备忘录] 直载失败，回退脚本注册', e);
     console.info('[预设备忘录] runtime=fallback-register');
     registerPresetMemoScript({ quiet: true });
+    return { ok: false, reason: 'init-failed', error: e };
   }
+}
+
+function loadAndInitExtensionMode() {
+  if (extensionInitTask) return extensionInitTask;
+  extensionInitTask = loadAndInitExtensionModeOnce().then(
+    result => {
+      if (!result || !result.ok) extensionInitTask = null;
+      return result;
+    },
+    err => {
+      extensionInitTask = null;
+      throw err;
+    },
+  );
+  return extensionInitTask;
 }
 
 function onTavernHelperReady() {
@@ -346,12 +371,14 @@ function waitForTavernHelper(attempt = 0) {
 }
 
 export async function onDelete() {
+  extensionInitTask = null;
   unregisterPresetMemoScript();
   cleanupExtensionDom();
   clearRegisterToastShown();
 }
 
 export async function onDisable() {
+  extensionInitTask = null;
   if (PM_DIRECT_LOAD) {
     cleanupPresetMemoViaSingleton();
   } else {
